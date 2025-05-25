@@ -92,6 +92,36 @@ settlement::withdraw_from_escrow(settlement_state, amount, ctx)
 settlement::settle_transfer_batch(settlement_state, from_addrs, to_addrs, amounts, sequence, ctx)
 ```
 
+## Smart Transfer Functions
+
+The settlement system provides two user experience patterns:
+
+### For Clean Wallet Accounting
+```move
+// Returns all remaining escrow balance to wallet after transfer
+settlement::smart_transfer_return_remaining(settlement_state, treasury, from, to, amount, sequence, ctx)
+settlement::smart_transfer_with_coin_return_remaining(settlement_state, treasury, coin, from, to, amount, sequence, ctx)
+```
+- ✅ All QUSD visible in wallet (no hidden escrow funds)
+- ✅ Perfect for occasional transfers and transparent accounting
+- ✅ Auto-deposits only what's needed, returns the rest
+
+### For High-Frequency Transfers  
+```move
+// Keeps remaining balance in escrow for future transfers
+settlement::smart_transfer_with_escrow(settlement_state, treasury, from, to, amount, sequence, ctx)
+settlement::smart_transfer_with_coin(settlement_state, treasury, coin, from, to, amount, sequence, ctx)
+```
+- ⚡ Optimized for multiple transfers (reduces gas costs)
+- ⚡ Perfect for power users, exchanges, automated systems
+- ⚡ Avoids repeated deposit/withdrawal overhead
+
+Both patterns:
+1. Check individual escrow balance first
+2. Auto-deposit only if insufficient funds  
+3. Execute quantum-resistant transfer with auto-withdrawal
+4. Maintain proper individual user accounting (not shared pool)
+
 ## Security Model
 
 - **Escrow Safety**: Smart contract guarantees, auditable on-chain
