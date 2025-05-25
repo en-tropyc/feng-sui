@@ -1,0 +1,18 @@
+{
+  "name": "feng-sui-network",
+  "version": "1.0.0",
+  "description": "Feng-Sui Network Service - Post-quantum signature aggregation for QUSD",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["post-quantum", "falcon", "signatures", "blockchain", "sui"],
+  "author": "QUSD Team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
