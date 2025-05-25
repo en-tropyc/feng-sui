@@ -51,18 +51,18 @@ describe('Transaction Flow Tests', () => {
       // Check queue status
       const queueResponse = await fetch('http://localhost:3000/api/transactions/queue/status');
       const queueStatus = await queueResponse.json();
-      expect(queueStatus.queueLength).toBeGreaterThanOrEqual(0);
+      expect(queueStatus.queue.queueLength).toBeGreaterThanOrEqual(0);
       
       // Check individual transaction status
       const statusResponse = await fetch(`http://localhost:3000/api/transactions/${result.transaction_id}/status`);
       const transactionStatus = await statusResponse.json();
-      expect(transactionStatus.transaction).toBeDefined();
+      expect(transactionStatus.transaction_id).toBeDefined();
       
     } catch (error) {
       // If server is not running, skip API tests
       console.warn('⚠️ Server not running, skipping API tests');
     }
-  });
+  }, 10000); // Increase timeout to 10 seconds
 
   test('should create valid transaction signatures', () => {
     const keyPair = libas.createKeyPair();

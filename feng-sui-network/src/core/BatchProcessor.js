@@ -19,9 +19,6 @@ class BatchProcessor {
       await this.crypto.initialize();
       await this.settlement.initialize();
       
-      // Set a mock package ID for testing (in production, this would be the real deployed package)
-      this.settlement.setPackageId('0x1234567890abcdef1234567890abcdef12345678');
-      
       this.initialized = true;
       console.log('✅ BatchProcessor initialized');
       

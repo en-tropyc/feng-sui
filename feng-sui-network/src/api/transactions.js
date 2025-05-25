@@ -58,6 +58,56 @@ router.get('/batches', (req, res) => {
 });
 
 /**
+ * GET /api/transactions/processed
+ * Get all processed transactions
+ */
+router.get('/processed', (req, res) => {
+  const processedTransactions = queue.getAllProcessedTransactions();
+  res.json({
+    transactions: processedTransactions,
+    count: processedTransactions.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/transactions/network/status
+ * Get Sui network and contract status
+ */
+router.get('/network/status', async (req, res) => {
+  try {
+    const networkStatus = await batchProcessor.settlement.getNetworkStatus();
+    const contractInfo = batchProcessor.settlement.getContractInfo();
+    
+    res.json({
+      network: networkStatus,
+      contracts: contractInfo,
+      settlement_ready: batchProcessor.settlement.isReady(),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to get network status',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/transactions/contracts
+ * Get QUSD contract information
+ */
+router.get('/contracts', (req, res) => {
+  const contractInfo = batchProcessor.settlement.getContractInfo();
+  res.json({
+    ...contractInfo,
+    deployment_status: 'deployed',
+    network_type: 'localnet',
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
  * GET /api/transactions/batches/:id/status
  * Get batch status
  */
@@ -202,19 +252,6 @@ router.get('/:id/status', (req, res) => {
   }
 
   res.json(response);
-});
-
-/**
- * GET /api/transactions/processed
- * Get all processed transactions
- */
-router.get('/processed', (req, res) => {
-  const processedTransactions = queue.getAllProcessedTransactions();
-  res.json({
-    transactions: processedTransactions,
-    count: processedTransactions.length,
-    timestamp: new Date().toISOString()
-  });
 });
 
 module.exports = router; 

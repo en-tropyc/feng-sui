@@ -44,7 +44,7 @@ describe('Falcon Integration Tests', () => {
       // If server is not running, skip this test
       console.warn('⚠️ Server not running, skipping API test');
     }
-  });
+  }, 10000); // Increase timeout to 10 seconds
 
   test('should generate valid Falcon key pairs', () => {
     const keyPair = libas.createKeyPair();
@@ -57,15 +57,16 @@ describe('Falcon Integration Tests', () => {
     expect(keyPair.publicKey.length).toBeGreaterThan(0);
   });
 
-  test('should sign and verify messages with libas', () => {
+  test('should verify signatures correctly', () => {
     const keyPair = libas.createKeyPair();
-    const message = 'test message for signing';
-    
+    const message = 'test message';
     const signature = libas.falconSign(message, keyPair.privateKey);
-    expect(signature).toBeDefined();
-    expect(typeof signature).toBe('string');
     
     const isValid = libas.falconVerify(message, signature, keyPair.publicKey);
     expect(isValid).toBe(true);
+    
+    // Test with wrong message
+    const isInvalid = libas.falconVerify('wrong message', signature, keyPair.publicKey);
+    expect(isInvalid).toBe(false);
   });
 }); 

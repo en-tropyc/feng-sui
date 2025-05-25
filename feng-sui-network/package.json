@@ -8,8 +8,12 @@
     "dev": "node src/server.js",
     "test": "jest",
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration.test.js",
+    "test:functional": "jest test/functional",
+    "test:integration": "jest test/integration.test.js test/transaction-flow.test.js test/api-live.test.js",
     "test:e2e": "jest test/phase2b-end-to-end.test.js",
+    "test:user-journey": "jest test/functional/user-journey.test.js",
+    "test:performance": "jest test/functional/performance.test.js",
+    "test:security": "jest test/functional/security.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -30,21 +34,5 @@
   },
   "devDependencies": {
     "jest": "^29.7.0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/test/**/*.test.js"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/server.js"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ]
   }
 }
