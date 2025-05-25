@@ -13,25 +13,22 @@ A quantum-secure USD stablecoin built on Sui blockchain with off-chain Falcon si
 └─────────────────┘    └──────────────────┘    └───────────────────────┘
 ```
 
-**Off-chain**: Quantum cryptography, Falcon signatures, transaction aggregation  
+**Off-chain**: Falcon wallets and transaction signing, signature aggregation/verification  
 **On-chain**: Simple settlement interface, escrow management, QUSD token
 
 ## User Experience
-┌─────────────────────────────────────────────────────────────┐
-│                    USER EXPERIENCE                         │
-│                                                             │
-│  👤 Alice wants to send 50 QUSD to Bob                    │
-│  📱 Opens Feng-Sui app, enters: Bob's address, 50 QUSD    │
-│  🔐 Signs with Falcon signature (quantum-resistant)        │
-│  ✅ Transaction submitted to Feng-Sui network              │
-│                                                             │
-│  🤖 BEHIND THE SCENES (invisible to Alice):                │
-│  • App checks: Alice has 30 QUSD in escrow                │
-│  • App auto-deposits: 25 QUSD (20 needed + 5 buffer)      │
-│  • Falcon signature gets aggregated & verified             │
-│  • Settlement happens on Sui blockchain                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```
+👤 Alice wants to send 50 QUSD to Bob
+📱 Opens Feng-Sui app, enters: Bob's address, 50 QUSD
+🔐 Signs with Falcon signature (quantum-resistant)
+✅ Transaction submitted to Feng-Sui network
+
+🤖 BEHIND THE SCENES (invisible to Alice):
+- App checks: Alice has 30 QUSD in escrow
+- App auto-deposits: 25 QUSD (20 needed + 5 buffer)
+- Falcon signature gets aggregated & verified
+- Settlement happens on Sui blockchain
+```
 
 ## Core Components
 
