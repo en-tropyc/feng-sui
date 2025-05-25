@@ -46,7 +46,7 @@ A quantum-secure USD stablecoin built on Sui blockchain with off-chain Falcon si
 
 ## User Experience
 
-### Primary Flow (Quantum-Resistant)
+### Primary Flow
 1. User deposits QUSD to escrow for Feng-Sui usage
 2. User signs transfers with Falcon signatures (quantum-secure)
 3. Feng-Sui network aggregates and verifies signatures off-chain
