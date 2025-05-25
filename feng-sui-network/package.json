@@ -23,7 +23,7 @@
   "author": "QUSD Team",
   "license": "MIT",
   "dependencies": {
-    "@mysten/sui": "^1.49.1",
+    "@mysten/sui": "^1.30.1",
     "@mysten/sui.js": "^0.54.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"
@@ -41,6 +41,10 @@
       "!src/server.js"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
   }
 }
