@@ -203,7 +203,7 @@ module qusd_stablecoin::settlement {
         });
     }
 
-    /// Settle a batch of transfers using escrowed QUSD
+    /// Settle a batch of transfers using escrowed QUSD (original function)
     public entry fun settle_transfer_batch(
         settlement_state: &mut SettlementState,
         from_addresses: vector<address>,
@@ -266,6 +266,93 @@ module qusd_stablecoin::settlement {
                 to,
                 amount,
                 sequence: expected_sequence,
+            });
+            
+            i = i + 1;
+        };
+
+        // Update sequence
+        settlement_state.current_sequence = expected_sequence;
+
+        // Emit batch settlement event
+        event::emit(BatchSettled {
+            sequence: expected_sequence,
+            mint_count: 0,
+            burn_count: 0,
+            transfer_count,
+            total_mint_amount: 0,
+            total_burn_amount: 0,
+            total_transfer_amount,
+            verifier: tx_context::sender(ctx),
+        });
+    }
+
+    /// Settle a batch of transfers with automatic withdrawal to recipients
+    /// This is what would happen in production after Falcon signature verification
+    public entry fun settle_transfer_batch_with_withdrawal(
+        settlement_state: &mut SettlementState,
+        from_addresses: vector<address>,
+        to_addresses: vector<address>,
+        amounts: vector<u64>,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        // Verify authorization
+        assert!(settlement_state.verifier == tx_context::sender(ctx), E_NOT_AUTHORIZED);
+        assert!(settlement_state.current_sequence + 1 == expected_sequence, E_INVALID_SEQUENCE);
+        
+        // Validate batch structure
+        let transfer_count = vector::length(&from_addresses);
+        assert!(transfer_count == vector::length(&to_addresses), E_INVALID_BATCH);
+        assert!(transfer_count == vector::length(&amounts), E_INVALID_BATCH);
+        assert!(transfer_count > 0, E_INVALID_BATCH);
+
+        // Validate all transfers first (all-or-nothing approach)
+        let mut i = 0;
+        while (i < transfer_count) {
+            let from = *vector::borrow(&from_addresses, i);
+            let amount = *vector::borrow(&amounts, i);
+            
+            assert!(amount > 0, E_ZERO_AMOUNT);
+            assert!(settlement_state.user_balances.contains(from), E_INSUFFICIENT_BALANCE);
+            
+            let from_balance = *settlement_state.user_balances.borrow(from);
+            assert!(from_balance >= amount, E_INSUFFICIENT_BALANCE);
+            
+            i = i + 1;
+        };
+
+        // Execute all transfers with automatic withdrawal
+        let mut total_transfer_amount = 0;
+        i = 0;
+        while (i < transfer_count) {
+            let from = *vector::borrow(&from_addresses, i);
+            let to = *vector::borrow(&to_addresses, i);
+            let amount = *vector::borrow(&amounts, i);
+            
+            // Update from balance (deduct from escrow)
+            let from_balance = *settlement_state.user_balances.borrow(from);
+            *settlement_state.user_balances.borrow_mut(from) = from_balance - amount;
+            
+            // Instead of updating to's escrow balance, withdraw directly to their wallet
+            let coin = coin::split(&mut settlement_state.escrow_treasury, amount, ctx);
+            transfer::public_transfer(coin, to);
+            
+            total_transfer_amount = total_transfer_amount + amount;
+            
+            // Emit transfer event
+            event::emit(TransferExecuted {
+                from,
+                to,
+                amount,
+                sequence: expected_sequence,
+            });
+            
+            // Emit withdrawal event for the recipient
+            event::emit(EscrowWithdraw {
+                user: to,
+                amount,
+                remaining_balance: 0, // They don't have escrow balance, it went directly to wallet
             });
             
             i = i + 1;
@@ -423,6 +510,214 @@ module qusd_stablecoin::settlement {
                 });
             }
         }
+    }
+
+    /// Smart transfer: Check escrow balance, auto-deposit if needed, then transfer with auto-withdrawal
+    /// This is the optimal production flow (original version)
+    public fun smart_transfer_internal(
+        settlement_state: &mut SettlementState,
+        treasury: &mut Treasury,
+        mut from_coin: Option<Coin<QUSD>>, // Optional coin to deposit if needed
+        from_address: address,
+        to_address: address,
+        amount: u64,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        // Verify authorization
+        assert!(settlement_state.verifier == tx_context::sender(ctx), E_NOT_AUTHORIZED);
+        assert!(settlement_state.current_sequence + 1 == expected_sequence, E_INVALID_SEQUENCE);
+        
+        // Check current escrow balance
+        let current_balance = if (table::contains(&settlement_state.user_balances, from_address)) {
+            *table::borrow(&settlement_state.user_balances, from_address)
+        } else {
+            0
+        };
+        
+        // Auto-deposit if insufficient funds
+        if (current_balance < amount) {
+            let needed_amount = amount - current_balance;
+            assert!(option::is_some(&from_coin), E_INSUFFICIENT_BALANCE);
+            
+            let coin = option::extract(&mut from_coin);
+            let coin_value = coin::value(&coin);
+            assert!(coin_value >= needed_amount, E_INSUFFICIENT_BALANCE);
+            
+            // Deposit the coin to escrow
+            coin::join(&mut settlement_state.escrow_treasury, coin);
+            
+            // Update user balance
+            if (table::contains(&settlement_state.user_balances, from_address)) {
+                let balance_ref = table::borrow_mut(&mut settlement_state.user_balances, from_address);
+                *balance_ref = *balance_ref + coin_value;
+            } else {
+                table::add(&mut settlement_state.user_balances, from_address, coin_value);
+            };
+            
+            // Emit deposit event
+            event::emit(EscrowDeposit {
+                user: from_address,
+                amount: coin_value,
+                new_balance: current_balance + coin_value
+            });
+        };
+        
+        // Destroy empty option if not used
+        option::destroy_none(from_coin);
+        
+        // Now execute the transfer with auto-withdrawal
+        let from_addresses = vector[from_address];
+        let to_addresses = vector[to_address];
+        let amounts = vector[amount];
+        
+        settle_transfer_batch_with_withdrawal(
+            settlement_state,
+            from_addresses,
+            to_addresses,
+            amounts,
+            expected_sequence,
+            ctx
+        );
+    }
+
+    /// Entry function wrapper for smart transfer with sufficient escrow balance (original)
+    public entry fun smart_transfer_with_escrow(
+        settlement_state: &mut SettlementState,
+        treasury: &mut Treasury,
+        from_address: address,
+        to_address: address,
+        amount: u64,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        smart_transfer_internal(
+            settlement_state,
+            treasury,
+            option::none(),
+            from_address,
+            to_address,
+            amount,
+            expected_sequence,
+            ctx
+        );
+    }
+
+    /// Entry function wrapper for smart transfer with auto-deposit (original)
+    public entry fun smart_transfer_with_coin(
+        settlement_state: &mut SettlementState,
+        treasury: &mut Treasury,
+        from_coin: Coin<QUSD>,
+        from_address: address,
+        to_address: address,
+        amount: u64,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        smart_transfer_internal(
+            settlement_state,
+            treasury,
+            option::some(from_coin),
+            from_address,
+            to_address,
+            amount,
+            expected_sequence,
+            ctx
+        );
+    }
+
+    /// Smart transfer with option to return remaining escrow balance to sender's wallet
+    /// This gives users an accurate view of their total QUSD holdings
+    public entry fun smart_transfer_return_remaining(
+        settlement_state: &mut SettlementState,
+        treasury: &mut Treasury,
+        from_address: address,
+        to_address: address,
+        amount: u64,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        // First do the normal smart transfer
+        smart_transfer_internal(
+            settlement_state,
+            treasury,
+            option::none(),
+            from_address,
+            to_address,
+            amount,
+            expected_sequence,
+            ctx
+        );
+        
+        // Then return any remaining escrow balance to sender's wallet
+        let remaining_balance = if (table::contains(&settlement_state.user_balances, from_address)) {
+            *table::borrow(&settlement_state.user_balances, from_address)
+        } else {
+            0
+        };
+        
+        if (remaining_balance > 0) {
+            // Update user's escrow balance to zero
+            *table::borrow_mut(&mut settlement_state.user_balances, from_address) = 0;
+            
+            // Create coin and transfer to user
+            let remaining_coin = coin::split(&mut settlement_state.escrow_treasury, remaining_balance, ctx);
+            transfer::public_transfer(remaining_coin, from_address);
+            
+            // Emit withdrawal event
+            event::emit(EscrowWithdraw {
+                user: from_address,
+                amount: remaining_balance,
+                remaining_balance: 0,
+            });
+        };
+    }
+
+    /// Smart transfer with coin that returns remaining escrow balance to sender's wallet
+    public entry fun smart_transfer_with_coin_return_remaining(
+        settlement_state: &mut SettlementState,
+        treasury: &mut Treasury,
+        from_coin: Coin<QUSD>,
+        from_address: address,
+        to_address: address,
+        amount: u64,
+        expected_sequence: u64,
+        ctx: &mut TxContext
+    ) {
+        // First do the normal smart transfer with coin
+        smart_transfer_internal(
+            settlement_state,
+            treasury,
+            option::some(from_coin),
+            from_address,
+            to_address,
+            amount,
+            expected_sequence,
+            ctx
+        );
+        
+        // Then return any remaining escrow balance to sender's wallet
+        let remaining_balance = if (table::contains(&settlement_state.user_balances, from_address)) {
+            *table::borrow(&settlement_state.user_balances, from_address)
+        } else {
+            0
+        };
+        
+        if (remaining_balance > 0) {
+            // Update user's escrow balance to zero
+            *table::borrow_mut(&mut settlement_state.user_balances, from_address) = 0;
+            
+            // Create coin and transfer to user
+            let remaining_coin = coin::split(&mut settlement_state.escrow_treasury, remaining_balance, ctx);
+            transfer::public_transfer(remaining_coin, from_address);
+            
+            // Emit withdrawal event
+            event::emit(EscrowWithdraw {
+                user: from_address,
+                amount: remaining_balance,
+                remaining_balance: 0,
+            });
+        };
     }
 
     #[test_only]
