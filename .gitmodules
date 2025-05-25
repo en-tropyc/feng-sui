@@ -1,3 +1,6 @@
 [submodule "circle-stablecoin-reference"]
 	path = circle-stablecoin-reference
 	url = https://github.com/circlefin/stablecoin-sui.git
+[submodule "libas"]
+	path = libas
+	url = https://github.com/btq-ag/libas.git
