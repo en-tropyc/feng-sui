@@ -1,25 +1,85 @@
 const express = require('express');
 const FalconCrypto = require('../core/FalconCrypto');
 const TransactionQueue = require('../core/TransactionQueue');
+const BatchProcessor = require('../core/BatchProcessor');
 
 const router = express.Router();
 const crypto = new FalconCrypto();
+const batchProcessor = new BatchProcessor();
 const queue = new TransactionQueue();
 
-// Initialize crypto service
-crypto.initialize().catch(error => {
-  console.error('Failed to initialize FalconCrypto:', error);
-});
+// Initialize services
+let servicesInitialized = false;
+
+async function initializeServices() {
+  if (servicesInitialized) return;
+  
+  try {
+    await crypto.initialize();
+    await batchProcessor.initialize();
+    queue.setBatchProcessor(batchProcessor);
+    servicesInitialized = true;
+    console.log('✅ All transaction services initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize transaction services:', error);
+  }
+}
+
+// Initialize on startup
+initializeServices();
 
 /**
  * GET /api/transactions/queue/status
  * Get queue status (must come before /:id/status)
  */
 router.get('/queue/status', (req, res) => {
-  const status = queue.getStatus();
+  const queueStatus = queue.getStatus();
+  const batchStatus = batchProcessor.getStatus();
+  
   res.json({
-    ...status,
+    queue: queueStatus,
+    batchProcessor: batchStatus,
     service: 'TransactionQueue',
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/transactions/batches
+ * Get all batches
+ */
+router.get('/batches', (req, res) => {
+  const batches = batchProcessor.getAllBatches();
+  res.json({
+    batches,
+    totalBatches: batches.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/transactions/batches/:id/status
+ * Get batch status
+ */
+router.get('/batches/:id/status', (req, res) => {
+  const batchId = parseInt(req.params.id);
+  const batch = batchProcessor.getBatch(batchId);
+  
+  if (!batch) {
+    return res.status(404).json({
+      error: `Batch ${batchId} not found`
+    });
+  }
+
+  res.json({
+    batch_id: batch.id,
+    status: batch.status,
+    transaction_count: batch.transactions.length,
+    created_at: batch.createdAt,
+    aggregated_at: batch.aggregatedAt,
+    settled_at: batch.settledAt,
+    settlement_result: batch.settlementResult,
+    error: batch.error,
     timestamp: new Date().toISOString()
   });
 });
@@ -67,7 +127,7 @@ router.post('/submit', (req, res) => {
       });
     }
 
-    // Add to transaction queue
+    // Add to transaction queue (will automatically batch when conditions are met)
     const queuedTransaction = queue.addTransaction({
       type,
       from,
@@ -84,7 +144,8 @@ router.post('/submit', (req, res) => {
       transaction_id: queuedTransaction.id,
       status: queuedTransaction.status,
       message: 'Transaction verified and queued for batching',
-      timestamp: queuedTransaction.timestamp
+      timestamp: queuedTransaction.timestamp,
+      batch_processor_ready: batchProcessor.isReady()
     });
 
   } catch (error) {
@@ -102,11 +163,56 @@ router.post('/submit', (req, res) => {
 router.get('/:id/status', (req, res) => {
   const transactionId = parseInt(req.params.id);
   
-  // For now, just return basic status (we'll enhance this later)
+  // Get transaction from queue (includes processed transactions)
+  const transaction = queue.getTransaction(transactionId);
+  
+  if (!transaction) {
+    return res.status(404).json({
+      error: `Transaction ${transactionId} not found`
+    });
+  }
+
+  // Enhanced status response
+  const response = {
+    transaction_id: transaction.id,
+    status: transaction.status,
+    type: transaction.type,
+    from: transaction.from,
+    to: transaction.to,
+    amount: transaction.amount,
+    timestamp: transaction.timestamp,
+    batched_at: transaction.batchedAt,
+    settled_at: transaction.settledAt,
+    tx_hash: transaction.txHash
+  };
+
+  // Add batch information if available
+  if (transaction.status === 'batched' || transaction.status === 'settled') {
+    // Find the batch this transaction belongs to
+    const batches = batchProcessor.getAllBatches();
+    const batch = batches.find(b => 
+      b.transactions.some(tx => tx.id === transactionId)
+    );
+    
+    if (batch) {
+      response.batch_id = batch.id;
+      response.batch_status = batch.status;
+      response.aggregate_signature = batch.aggregateSignature;
+    }
+  }
+
+  res.json(response);
+});
+
+/**
+ * GET /api/transactions/processed
+ * Get all processed transactions
+ */
+router.get('/processed', (req, res) => {
+  const processedTransactions = queue.getAllProcessedTransactions();
   res.json({
-    transaction_id: transactionId,
-    status: 'queued', // Will be enhanced with real status tracking
-    message: 'Transaction is in queue awaiting batch processing',
+    transactions: processedTransactions,
+    count: processedTransactions.length,
     timestamp: new Date().toISOString()
   });
 });
