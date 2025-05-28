@@ -75,6 +75,28 @@ class SuiSettlement {
   }
 
   /**
+   * Auto-register a test mapping for a Falcon key (for testing only)
+   * Generates a deterministic Sui address based on the Falcon key hash
+   * @param {string} falconPublicKey - The Falcon public key to create a mapping for
+   * @returns {string} - The generated Sui address
+   */
+  autoRegisterTestMapping(falconPublicKey) {
+    // Generate a deterministic Sui address from the Falcon key
+    // Use a simple hash of the Falcon key to create a valid Sui address
+    const crypto = require('crypto');
+    const hash = crypto.createHash('sha256').update(falconPublicKey).digest('hex');
+    
+    // Create a valid Sui address format (0x + 64 hex chars)
+    const suiAddress = '0x' + hash.substring(0, 64);
+    
+    // Register the mapping
+    this.falconToSuiMapping.set(falconPublicKey, suiAddress);
+    console.log(`🧪 Auto-registered test mapping: ${falconPublicKey.substring(0, 20)}... -> ${suiAddress}`);
+    
+    return suiAddress;
+  }
+
+  /**
    * Get the Sui address for a Falcon public key
    * @param {string} falconPublicKey - The Falcon public key
    * @returns {string|null} - The mapped Sui address or null if not found
@@ -95,13 +117,20 @@ class SuiSettlement {
     }
     
     // If it's a Falcon public key, look up the mapping
-    const mappedAddress = this.getSuiAddressForFalconKey(address);
+    let mappedAddress = this.getSuiAddressForFalconKey(address);
     if (mappedAddress) {
       console.log(`🔄 Mapped Falcon key to Sui address: ${address.substring(0, 20)}... -> ${mappedAddress}`);
       return mappedAddress;
     }
     
-    // No mapping found
+    // No mapping found - in simulation mode, auto-register test mappings
+    if (this.simulationMode) {
+      console.log(`🧪 Auto-creating test mapping for Falcon key: ${address.substring(0, 20)}...`);
+      mappedAddress = this.autoRegisterTestMapping(address);
+      return mappedAddress;
+    }
+    
+    // No mapping found in production mode
     console.warn(`⚠️ No Sui address mapping found for Falcon key: ${address.substring(0, 20)}...`);
     return null;
   }
@@ -365,8 +394,12 @@ class SuiSettlement {
       const suiAddress = this.resolveToSuiAddress(userAddress);
       
       if (!suiAddress) {
+        console.error(`❌ No Sui address mapping found for Falcon key: ${userAddress.substring(0, 20)}...`);
+        console.error(`💡 Note: Falcon keys must be mapped to Sui addresses before checking escrow balance`);
         throw new Error(`No Sui address mapping found for Falcon key: ${userAddress.substring(0, 20)}...`);
       }
+
+      console.log(`🔍 Checking escrow balance for Sui address: ${suiAddress}`);
 
       // If in simulation mode, return a mock balance for testing
       if (this.simulationMode || !this.client) {
@@ -417,7 +450,7 @@ class SuiSettlement {
 
         return 0; // Default to 0 if balance not found
       } catch (contractError) {
-        console.warn(`⚠️ On-chain balance check failed, using simulation: ${contractError.message}`);
+        console.warn(`⚠️ On-chain balance check failed for ${suiAddress}, using simulation: ${contractError.message}`);
         
         // Fall back to simulation if contract call fails
         const lastChar = suiAddress.slice(-1);
@@ -426,7 +459,7 @@ class SuiSettlement {
       }
 
     } catch (error) {
-      console.error(`❌ Failed to get escrow balance for ${userAddress}:`, error.message);
+      console.error(`❌ Failed to get escrow balance for Falcon key ${userAddress.substring(0, 20)}...:`, error.message);
       
       // For robustness, return 0 if we can't check the balance
       // This means users need to have confirmed escrow balances to transact
