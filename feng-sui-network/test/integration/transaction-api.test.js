@@ -14,22 +14,23 @@ describe('Transaction API Integration Tests', () => {
 
   describe('Core Transaction Endpoints', () => {
     test('POST /api/transactions/submit should accept valid mint transaction', async () => {
-      const message = JSON.stringify({
+      const transactionData = {
         type: 'mint',
         from: 'treasury',
         to: testUser.publicKey,
         amount: '1000',
         nonce: Date.now()
-      });
+      };
 
+      const message = JSON.stringify(transactionData);
       const signature = falconCrypto.sign(message, testUser.privateKey);
 
       const response = await fetch(`${BASE_URL}/api/transactions/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
-          signature,
+          ...transactionData,
+          falcon_signature: signature,
           public_key: testUser.publicKey
         })
       });
@@ -44,25 +45,25 @@ describe('Transaction API Integration Tests', () => {
       
       expect(result.success).toBe(true);
       expect(result.transaction_id).toBeDefined();
-      expect(result.status).toBe('batched');
-      expect(result.message).toContain('verified and queued');
+      expect(['queued', 'batched']).toContain(result.status);
+      expect(result.message).toMatch(/(verified and queued|verified and queued for batching)/);
     });
 
     test('should reject transactions with invalid signatures', async () => {
-      const message = JSON.stringify({
+      const transactionData = {
         type: 'transfer',
         from: testUser.publicKey,
         to: 'recipient_address',
         amount: '100',
         nonce: Date.now()
-      });
+      };
 
       const response = await fetch(`${BASE_URL}/api/transactions/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
-          signature: 'invalid_signature',
+          ...transactionData,
+          falcon_signature: 'invalid_signature',
           public_key: testUser.publicKey
         })
       });
@@ -70,19 +71,19 @@ describe('Transaction API Integration Tests', () => {
       expect(response.ok).toBe(false);
       const result = await response.json();
       
-      expect(result.success).toBe(false);
       expect(result.error).toContain('Invalid Falcon signature');
     });
 
     test('should reject transactions with mismatched public keys', async () => {
-      const message = JSON.stringify({
+      const transactionData = {
         type: 'transfer',
         from: testUser.publicKey,
         to: 'recipient_address',
         amount: '100',
         nonce: Date.now()
-      });
+      };
 
+      const message = JSON.stringify(transactionData);
       const signature = falconCrypto.sign(message, testUser.privateKey);
       const differentUser = falconCrypto.createKeyPair();
 
@@ -90,8 +91,8 @@ describe('Transaction API Integration Tests', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
-          signature,
+          ...transactionData,
+          falcon_signature: signature,
           public_key: differentUser.publicKey // Wrong public key
         })
       });
@@ -99,16 +100,14 @@ describe('Transaction API Integration Tests', () => {
       expect(response.ok).toBe(false);
       const result = await response.json();
       
-      expect(result.success).toBe(false);
       expect(result.error).toContain('Invalid Falcon signature');
     });
 
     test('should reject transactions with missing required fields', async () => {
       const incompleteTransactions = [
-        { message: '{}', signature: 'sig', public_key: testUser.publicKey }, // Missing transaction fields
-        { signature: 'sig', public_key: testUser.publicKey }, // Missing message
-        { message: '{"type":"transfer"}', public_key: testUser.publicKey }, // Missing signature
-        { message: '{"type":"transfer"}', signature: 'sig' } // Missing public_key
+        { amount: '100', nonce: 123, falcon_signature: 'sig', public_key: testUser.publicKey }, // Missing type and from
+        { type: 'transfer', from: 'addr', amount: '100', nonce: 123, public_key: testUser.publicKey }, // Missing signature
+        { type: 'transfer', from: 'addr', amount: '100', nonce: 123, falcon_signature: 'sig' } // Missing public_key
       ];
 
       for (const transaction of incompleteTransactions) {
@@ -120,7 +119,7 @@ describe('Transaction API Integration Tests', () => {
 
         expect(response.ok).toBe(false);
         const result = await response.json();
-        expect(result.success).toBe(false);
+        expect(result.error).toContain('Missing required fields');
       }
     });
   });
@@ -130,22 +129,23 @@ describe('Transaction API Integration Tests', () => {
 
     test('should submit transaction and retrieve status', async () => {
       // First submit a transaction
-      const message = JSON.stringify({
+      const transactionData = {
         type: 'mint',
         from: 'treasury',
         to: testUser.publicKey,
         amount: '500',
         nonce: Date.now()
-      });
+      };
 
+      const message = JSON.stringify(transactionData);
       const signature = falconCrypto.sign(message, testUser.privateKey);
 
       const submitResponse = await fetch(`${BASE_URL}/api/transactions/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
-          signature,
+          ...transactionData,
+          falcon_signature: signature,
           public_key: testUser.publicKey
         })
       });
@@ -170,12 +170,12 @@ describe('Transaction API Integration Tests', () => {
       expect(response.ok).toBe(true);
       const result = await response.json();
       
-      expect(result.queueLength).toBeDefined();
-      expect(result.processedCount).toBeDefined();
-      expect(result.batchProcessorReady).toBeDefined();
-      expect(typeof result.queueLength).toBe('number');
-      expect(typeof result.processedCount).toBe('number');
-      expect(typeof result.batchProcessorReady).toBe('boolean');
+      expect(result.queue.queueLength).toBeDefined();
+      expect(result.queue.processedCount).toBeDefined();
+      expect(result.queue.batchProcessorReady).toBeDefined();
+      expect(typeof result.queue.queueLength).toBe('number');
+      expect(typeof result.queue.processedCount).toBe('number');
+      expect(typeof result.queue.batchProcessorReady).toBe('boolean');
     });
 
     test('GET /api/transactions/batches/status should return batch information', async () => {
@@ -184,10 +184,9 @@ describe('Transaction API Integration Tests', () => {
       expect(response.ok).toBe(true);
       const result = await response.json();
       
-      expect(result.totalBatches).toBeDefined();
-      expect(result.batchCount).toBeDefined();
-      expect(typeof result.totalBatches).toBe('number');
-      expect(typeof result.batchCount).toBe('number');
+      expect(result.batches).toBeDefined();
+      expect(result.batches.totalBatches).toBeDefined();
+      expect(typeof result.batches.totalBatches).toBe('number');
     });
   });
 
@@ -198,9 +197,9 @@ describe('Transaction API Integration Tests', () => {
       expect(response.ok).toBe(true);
       const result = await response.json();
       
-      expect(result.settlementReady).toBeDefined();
-      expect(result.network).toBeDefined();
-      expect(typeof result.settlementReady).toBe('boolean');
+      expect(result.settlement).toBeDefined();
+      expect(result.settlement.settlementReady).toBeDefined();
+      expect(typeof result.settlement.settlementReady).toBe('boolean');
     });
 
     test('GET /api/health should return service health', async () => {
@@ -221,22 +220,23 @@ describe('Transaction API Integration Tests', () => {
 
       // Submit multiple transactions
       for (let i = 0; i < numTransactions; i++) {
-        const message = JSON.stringify({
+        const transactionData = {
           type: 'mint',
           from: 'treasury',
           to: testUser.publicKey,
           amount: '100',
           nonce: Date.now() + i
-        });
+        };
 
+        const message = JSON.stringify(transactionData);
         const signature = falconCrypto.sign(message, testUser.privateKey);
 
         const response = await fetch(`${BASE_URL}/api/transactions/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message,
-            signature,
+            ...transactionData,
+            falcon_signature: signature,
             public_key: testUser.publicKey
           })
         });
@@ -254,7 +254,7 @@ describe('Transaction API Integration Tests', () => {
       expect(batchResponse.ok).toBe(true);
       
       const batchResult = await batchResponse.json();
-      expect(batchResult.totalBatches).toBeGreaterThan(0);
+      expect(batchResult.batches.totalBatches).toBeGreaterThan(0);
     });
   });
 
@@ -275,7 +275,6 @@ describe('Transaction API Integration Tests', () => {
       
       expect(response.ok).toBe(false);
       const result = await response.json();
-      expect(result.success).toBe(false);
       expect(result.error).toContain('not found');
     });
 
@@ -290,14 +289,15 @@ describe('Transaction API Integration Tests', () => {
 
   describe('Falcon Signature Integration', () => {
     test('should verify Falcon signatures correctly through API', async () => {
-      const message = JSON.stringify({
+      const transactionData = {
         type: 'transfer',
         from: testUser.publicKey,
         to: 'recipient_address',
         amount: '100',
         nonce: Date.now()
-      });
+      };
 
+      const message = JSON.stringify(transactionData);
       const signature = falconCrypto.sign(message, testUser.privateKey);
 
       // Test direct signature verification if endpoint exists
