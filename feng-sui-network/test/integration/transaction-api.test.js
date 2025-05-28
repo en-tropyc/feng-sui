@@ -1,6 +1,6 @@
 const setup = require('../setup');
 
-const BASE_URL = process.env.FENG_SUI_API_URL || 'http://localhost:3001';
+const BASE_URL = process.env.FENG_SUI_API_URL || 'http://localhost:3000';
 
 describe('Transaction API Integration Tests', () => {
   let falconCrypto;
@@ -9,7 +9,7 @@ describe('Transaction API Integration Tests', () => {
   beforeAll(async () => {
     await setup.initializeLibas();
     falconCrypto = setup.getFalconCrypto();
-    testUser = falconCrypto.generateKeypair();
+    testUser = falconCrypto.createKeyPair();
   });
 
   describe('Core Transaction Endpoints', () => {
@@ -84,7 +84,7 @@ describe('Transaction API Integration Tests', () => {
       });
 
       const signature = falconCrypto.sign(message, testUser.privateKey);
-      const differentUser = falconCrypto.generateKeypair();
+      const differentUser = falconCrypto.createKeyPair();
 
       const response = await fetch(`${BASE_URL}/api/transactions/submit`, {
         method: 'POST',
@@ -322,7 +322,7 @@ describe('Transaction API Integration Tests', () => {
     });
 
     test('should generate valid Falcon key pairs', () => {
-      const keyPair = falconCrypto.generateKeypair();
+      const keyPair = falconCrypto.createKeyPair();
       
       expect(keyPair).toHaveProperty('privateKey');
       expect(keyPair).toHaveProperty('publicKey');

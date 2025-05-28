@@ -1,16 +1,16 @@
 const setup = require('../setup');
 
-const BASE_URL = process.env.FENG_SUI_API_URL || 'http://localhost:3001';
+const BASE_URL = process.env.FENG_SUI_API_URL || 'http://localhost:3000';
 
 describe('Balance Verification Functional Tests', () => {
   let falconCrypto;
   let userWallet;
-  const realSuiAddress = '0x1234567890abcdef1234567890abcdef12345678';
+  const realSuiAddress = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
   beforeAll(async () => {
     await setup.initializeLibas();
     falconCrypto = setup.getFalconCrypto();
-    userWallet = falconCrypto.generateKeypair();
+    userWallet = falconCrypto.createKeyPair();
   });
 
   describe('Complete User Onboarding Flow', () => {
@@ -130,7 +130,7 @@ describe('Balance Verification Functional Tests', () => {
     }, 30000);
 
     test('should handle user without mapping gracefully', async () => {
-      const unmappedUser = falconCrypto.generateKeypair();
+      const unmappedUser = falconCrypto.createKeyPair();
 
       // Try to check balance without mapping
       const balanceResponse = await fetch(`${BASE_URL}/api/transactions/check-balance`, {
