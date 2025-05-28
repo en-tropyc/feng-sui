@@ -7,8 +7,8 @@ module.exports = {
     '**/test/**/*.test.js'
   ],
   
-  // Test timeout (increased for crypto operations)
-  testTimeout: 20000,
+  // Test timeout (15 seconds for API calls)
+  testTimeout: 15000,
   
   // ES Module handling for Sui SDK
   extensionsToTreatAsEsm: ['.ts'],
@@ -30,20 +30,20 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
   
   // Module resolution
-  moduleDirectories: ['node_modules', 'src'],
+  moduleDirectories: ['node_modules', '<rootDir>'],
   
-  // Verbose output for debugging
-  verbose: false,
+  // Performance settings
+  maxWorkers: '50%', // Use half the available CPU cores
   
-  // Fail fast on first test failure (useful for CI)
-  bail: false,
+  // Global settings for better stability
+  globals: {
+    'ts-jest': {
+      useESM: true
+    }
+  },
   
-  // Force exit after tests complete
-  forceExit: true,
-  
-  // Detect open handles
-  detectOpenHandles: false,
-  
-  // Silent mode (reduce noise)
-  silent: false
+  // Better error handling
+  verbose: true,
+  detectOpenHandles: true,
+  forceExit: true
 }; 
