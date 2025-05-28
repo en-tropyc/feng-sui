@@ -3,6 +3,35 @@
 // Increase timeout for all tests due to crypto operations
 jest.setTimeout(15000);
 
+let falconCrypto = null;
+
+// Test setup functions
+const initializeLibas = async () => {
+  try {
+    const path = require('path');
+    const libasPath = path.join(__dirname, '../../libas');
+    falconCrypto = require(libasPath);
+    console.log('✅ libas library loaded successfully');
+    return falconCrypto;
+  } catch (error) {
+    console.error('❌ Failed to load libas library:', error.message);
+    throw new Error('libas library is required for tests');
+  }
+};
+
+const getFalconCrypto = () => {
+  if (!falconCrypto) {
+    throw new Error('libas not initialized. Call initializeLibas() first.');
+  }
+  return falconCrypto;
+};
+
+// Export functions for use in tests
+module.exports = {
+  initializeLibas,
+  getFalconCrypto
+};
+
 // Global test utilities
 global.testUtils = {
   // Wait helper

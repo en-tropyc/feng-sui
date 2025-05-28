@@ -10,6 +10,12 @@ module.exports = {
   // Test timeout (increased for crypto operations)
   testTimeout: 20000,
   
+  // ES Module handling for Sui SDK
+  extensionsToTreatAsEsm: ['.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@mysten/sui|@noble/.*)/)'
+  ],
+  
   // Coverage configuration
   collectCoverage: false, // Enable when needed
   coverageDirectory: 'coverage',
