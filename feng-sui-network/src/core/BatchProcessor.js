@@ -182,6 +182,23 @@ class BatchProcessor {
 
     for (const batch of pendingBatches) {
       try {
+        // Step 0: Verify balances for all transactions in the batch
+        if (this.settlement.isReady()) {
+          console.log(`🔍 Verifying balances for batch ${batch.id}...`);
+          const balanceVerification = await this.settlement.verifyBatchBalances(batch.transactions);
+          
+          if (!balanceVerification.allValid) {
+            console.error(`❌ Batch ${batch.id} failed balance verification. Invalid transactions: ${balanceVerification.invalidTransactions.join(', ')}`);
+            batch.status = 'balance_verification_failed';
+            batch.error = `Insufficient balance for transactions: ${balanceVerification.invalidTransactions.join(', ')}`;
+            batch.balanceVerification = balanceVerification;
+            continue; // Skip this batch
+          }
+          
+          console.log(`✅ Batch ${batch.id} passed balance verification`);
+          batch.balanceVerification = balanceVerification;
+        }
+        
         // Step 1: Aggregate signatures
         await this.aggregateSignatures(batch);
         
