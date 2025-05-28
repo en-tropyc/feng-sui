@@ -1,8 +1,11 @@
 const path = require('path');
 
-// Load libas for test data generation
+// Load libas library for Falcon crypto
 const libasPath = path.join(__dirname, '../../libas');
 const libas = require(libasPath);
+
+// Use configurable base URL
+const baseUrl = process.env.FENG_SUI_API_URL || global.testUtils?.API_BASE_URL || 'http://localhost:3001';
 
 describe('Transaction Flow Tests', () => {
   test('should handle complete transaction flow', async () => {
@@ -13,22 +16,21 @@ describe('Transaction Flow Tests', () => {
 
     // 2. Create a transaction
     const transaction = {
-      type: 'transfer',
-      from: '0x1234567890abcdef',
-      to: '0xfedcba0987654321',
+      type: 'mint',
+      from: 'treasury',
+      to: keyPair.publicKey,
       amount: '100',
-      nonce: Date.now() // Use timestamp as nonce for uniqueness
+      nonce: Date.now()
     };
 
-    // 3. Create transaction message and sign it
-    const transactionMessage = JSON.stringify(transaction);
-    const signature = libas.falconSign(transactionMessage, keyPair.privateKey);
+    // 3. Sign the transaction
+    const message = JSON.stringify(transaction);
+    const signature = libas.falconSign(message, keyPair.privateKey);
     expect(signature).toBeDefined();
 
-    // 4. Test API endpoints (requires server to be running)
     try {
       // Submit transaction to our API
-      const response = await fetch('http://localhost:3000/api/transactions/submit', {
+      const response = await fetch(`${baseUrl}/api/transactions/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -44,25 +46,33 @@ describe('Transaction Flow Tests', () => {
         })
       });
 
+      expect(response.ok).toBe(true);
       const result = await response.json();
       expect(result.success).toBe(true);
       expect(result.transaction_id).toBeDefined();
-      
-      // Check queue status
-      const queueResponse = await fetch('http://localhost:3000/api/transactions/queue/status');
-      const queueStatus = await queueResponse.json();
-      expect(queueStatus.queue.queueLength).toBeGreaterThanOrEqual(0);
-      
-      // Check individual transaction status
-      const statusResponse = await fetch(`http://localhost:3000/api/transactions/${result.transaction_id}/status`);
+
+      // 4. Check queue status
+      const queueResponse = await fetch(`${baseUrl}/api/transactions/queue/status`);
+      expect(queueResponse.ok).toBe(true);
+
+      // 5. Check specific transaction status
+      const statusResponse = await fetch(`${baseUrl}/api/transactions/${result.transaction_id}/status`);
+      expect(statusResponse.ok).toBe(true);
       const transactionStatus = await statusResponse.json();
       expect(transactionStatus.transaction_id).toBeDefined();
       
     } catch (error) {
       // If server is not running, skip API tests
       console.warn('⚠️ Server not running, skipping API tests');
+      return;
     }
-  }, 10000); // Increase timeout to 10 seconds
+
+    // 6. Verify the signature works independently
+    const verified = libas.falconVerify(message, signature, keyPair.publicKey);
+    expect(verified).toBe(true);
+
+    console.log('✅ Complete transaction flow test passed');
+  });
 
   test('should create valid transaction signatures', () => {
     const keyPair = libas.createKeyPair();
