@@ -156,13 +156,23 @@ router.post('/submit', (req, res) => {
     }
 
     // Create transaction message for verification
-    const transactionMessage = JSON.stringify({
+    // Match the exact format used by the client for signature generation
+    // We need to reconstruct the message exactly as the client created it
+    const transactionData = {
       type,
-      from,
-      to: to || null,
-      amount,
-      nonce
-    });
+      from
+    };
+    
+    // Add 'to' field in the same position if it was provided in the request
+    if (to !== undefined && to !== null) {
+      transactionData.to = to;
+    }
+    
+    // Add remaining fields
+    transactionData.amount = amount;
+    transactionData.nonce = nonce;
+    
+    const transactionMessage = JSON.stringify(transactionData);
 
     // Verify Falcon signature
     const isValidSignature = crypto.verifySignature(
