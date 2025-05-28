@@ -1,35 +1,82 @@
 // Global test setup and utilities
 
-// Increase timeout for all tests due to crypto operations
-jest.setTimeout(15000);
+// Remove conflicting timeout setting - now handled in jest.config.js
+// jest.setTimeout(15000); // REMOVED - conflicts with jest.config.js
 
-let falconCrypto = null;
+let libas = null;
+let server = null;
 
 // Test setup functions
 const initializeLibas = async () => {
   try {
     const path = require('path');
     const libasPath = path.join(__dirname, '../../libas');
-    falconCrypto = require(libasPath);
+    libas = require(libasPath);
     console.log('✅ libas library loaded successfully');
-    return falconCrypto;
+    return libas;
   } catch (error) {
     console.error('❌ Failed to load libas library:', error.message);
     throw new Error('libas library is required for tests');
   }
 };
 
+const startTestServer = async () => {
+  if (server) return server;
+  
+  try {
+    const app = require('../src/server');
+    const port = process.env.TEST_PORT || 3001; // Use different port for tests
+    
+    return new Promise((resolve, reject) => {
+      server = app.listen(port, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log(`✅ Test server started on port ${port}`);
+          resolve(server);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('❌ Failed to start test server:', error.message);
+    throw error;
+  }
+};
+
+const stopTestServer = async () => {
+  if (server) {
+    return new Promise((resolve) => {
+      server.close(() => {
+        console.log('✅ Test server stopped');
+        server = null;
+        resolve();
+      });
+    });
+  }
+};
+
 const getFalconCrypto = () => {
-  if (!falconCrypto) {
+  if (!libas) {
     throw new Error('libas not initialized. Call initializeLibas() first.');
   }
-  return falconCrypto;
+  
+  // Return a wrapper object that matches what tests expect
+  return {
+    createKeyPair: () => libas.createKeyPair(),
+    sign: (message, privateKey) => libas.falconSign(message, privateKey),
+    verify: (message, signature, publicKey) => libas.falconVerify(message, signature, publicKey),
+    // Also expose the raw libas methods for direct access
+    falconSign: (message, privateKey) => libas.falconSign(message, privateKey),
+    falconVerify: (message, signature, publicKey) => libas.falconVerify(message, signature, publicKey)
+  };
 };
 
 // Export functions for use in tests
 module.exports = {
   initializeLibas,
-  getFalconCrypto
+  getFalconCrypto,
+  startTestServer,
+  stopTestServer
 };
 
 // Global test utilities
@@ -55,8 +102,8 @@ global.testUtils = {
     return libas.createKeyPair();
   },
   
-  // API base URL
-  API_BASE_URL: 'http://localhost:3000'
+  // API base URL (use test port)
+  API_BASE_URL: `http://localhost:${process.env.TEST_PORT || 3001}`
 };
 
 // Console formatting for test output
@@ -73,9 +120,8 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Cleanup function for tests
-global.cleanup = () => {
-  // Add any cleanup logic here
-  // For example, clearing intervals, closing connections, etc.
+global.cleanup = async () => {
+  await stopTestServer();
 };
 
 // Test environment validation
