@@ -102,9 +102,9 @@ The settlement system provides two user experience patterns:
 settlement::smart_transfer_return_remaining(settlement_state, treasury, from, to, amount, sequence, ctx)
 settlement::smart_transfer_with_coin_return_remaining(settlement_state, treasury, coin, from, to, amount, sequence, ctx)
 ```
-- ✅ All QUSD visible in wallet (no hidden escrow funds)
-- ✅ Perfect for occasional transfers and transparent accounting
-- ✅ Auto-deposits only what's needed, returns the rest
+- All QUSD visible in wallet (no hidden escrow funds)
+- Better for occasional transfers and transparent accounting
+- Auto-deposits only what's needed, returns the rest
 
 ### For High-Frequency Transfers  
 ```move
@@ -112,9 +112,9 @@ settlement::smart_transfer_with_coin_return_remaining(settlement_state, treasury
 settlement::smart_transfer_with_escrow(settlement_state, treasury, from, to, amount, sequence, ctx)
 settlement::smart_transfer_with_coin(settlement_state, treasury, coin, from, to, amount, sequence, ctx)
 ```
-- ⚡ Optimized for multiple transfers (reduces gas costs)
-- ⚡ Perfect for power users, exchanges, automated systems
-- ⚡ Avoids repeated deposit/withdrawal overhead
+- Optimized for multiple transfers (reduces gas costs)
+- Suited for power users, exchanges, automated systems
+- Avoids repeated deposit/withdrawal overhead
 
 Both patterns:
 1. Check individual escrow balance first
