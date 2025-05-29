@@ -1,17 +1,13 @@
-// Copyright 2024 Feng-Sui. All rights reserved.
-// SPDX-License-Identifier: Apache-2.0
-
-/// Settlement Module
-/// This module handles simple settlement of verified transactions from the Feng-Sui network.
-/// All quantum cryptography and signature verification happens off-chain.
-module qusd_stablecoin::settlement {
-    use std::vector;
-    use sui::event;
+/// Settlement module for the Feng-Sui network
+/// Handles batch processing and settlement of quantum-resistant transactions
+module qusd_contracts::settlement {
     use sui::coin::{Self, Coin};
     use sui::table::{Self, Table};
-    use qusd_stablecoin::qusd::{Self, Treasury, QUSD};
+    use sui::event;
+    use qusd_contracts::qusd::{Self, Treasury, QUSD};
 
     /// Settlement state for tracking batches and escrow
+    #[allow(lint(coin_field))]
     public struct SettlementState has key {
         id: UID,
         /// Current settlement sequence
@@ -516,7 +512,7 @@ module qusd_stablecoin::settlement {
     /// This is the optimal production flow (original version)
     public fun smart_transfer_internal(
         settlement_state: &mut SettlementState,
-        treasury: &mut Treasury,
+        _treasury: &mut Treasury,
         mut from_coin: Option<Coin<QUSD>>, // Optional coin to deposit if needed
         from_address: address,
         to_address: address,

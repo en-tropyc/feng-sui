@@ -1,13 +1,9 @@
-// Copyright 2024 Feng-Sui. All rights reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 /// QUSD - Quantum-resistant USD Stablecoin
 /// This module implements a stablecoin designed for quantum-resistant transactions
 /// through the Feng-Sui off-chain network with batch settlement on Sui.
-module qusd_stablecoin::qusd {
-    use sui::coin::{Self, Coin, TreasuryCap, CoinMetadata};
+module qusd_contracts::qusd {
+    use sui::coin::{Self, Coin, TreasuryCap};
     use sui::url;
-    use std::string;
 
     /// The QUSD coin type
     public struct QUSD has drop {}
