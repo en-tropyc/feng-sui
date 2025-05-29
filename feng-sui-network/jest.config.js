@@ -7,8 +7,8 @@ module.exports = {
     '**/test/**/*.test.js'
   ],
   
-  // Test timeout (15 seconds for API calls)
-  testTimeout: 15000,
+  // Test timeout (5 seconds for API calls)
+  testTimeout: 5000,
   
   // ES Module handling for Sui SDK
   extensionsToTreatAsEsm: ['.ts'],

@@ -8,7 +8,7 @@ const router = express.Router();
 const crypto = new FalconCrypto();
 const batchProcessor = new BatchProcessor();
 const queue = new TransactionQueue();
-const suiSettlement = new SuiSettlement();
+const suiSettlement = SuiSettlement.getInstance();
 
 // Initialize services
 let servicesInitialized = false;

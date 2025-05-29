@@ -4,6 +4,9 @@ const { Transaction } = require('@mysten/sui/transactions');
 const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519');
 const crypto = require('crypto');
 
+// Singleton instance for sharing address mappings across components
+let sharedInstance = null;
+
 class SuiSettlement {
   constructor() {
     this.client = null;
@@ -11,9 +14,9 @@ class SuiSettlement {
     this.network = 'localnet'; // Use local network for development
     
     // Configuration - use environment variables in production
-    this.packageId = '0xcc6d0021439588f46812b26b66e4aa68436cba7deb47844fe20634c8c9f4f294';
-    this.treasuryId = '0xf49d6bda545e9cc7409c010aca8b638ba8f5b4df4639322c6dca3596ef5a1ff9';
-    this.settlementStateId = '0x0ff44202de6e7a68db8e5867a4e4336610cc1e1ecdf15620a97b1ca36e75a9cc';
+    this.packageId = '0xaed59c13d1a49fd72ac479eaeb9d2c83fa1eb6cd3dc15848ee655a39dc660aa3';
+    this.treasuryId = '0xd84902a84210cae9cec509ac7f94cc5d3713d36b6d098511752aad4e62cbc872';
+    this.settlementStateId = '0xc1425b5f6be7f3181a992af4ce0a92de4c775b35c889e5e46eb09c0b750c19ed';
     
     // Real admin keypair for settlement transactions
     this.adminKeypair = null;
@@ -527,6 +530,25 @@ class SuiSettlement {
 
     console.log(`🔍 Batch balance verification: ${results.allValid ? 'ALL VALID' : `${results.invalidTransactions.length} INVALID`}`);
     return results;
+  }
+
+  /**
+   * Get the shared singleton instance
+   * @returns {SuiSettlement} - The shared instance
+   */
+  static getInstance() {
+    if (!sharedInstance) {
+      sharedInstance = new SuiSettlement();
+    }
+    return sharedInstance;
+  }
+
+  /**
+   * Create a new instance (for testing purposes only)
+   * @returns {SuiSettlement} - A new instance
+   */
+  static createInstance() {
+    return new SuiSettlement();
   }
 }
 

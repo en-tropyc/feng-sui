@@ -4,7 +4,7 @@ const SuiSettlement = require('./SuiSettlement');
 class BatchProcessor {
   constructor() {
     this.crypto = new FalconCrypto();
-    this.settlement = new SuiSettlement();
+    this.settlement = SuiSettlement.getInstance(); // Use singleton to share address mappings
     this.initialized = false;
     this.batches = new Map(); // Store batches by ID
     this.nextBatchId = 1;
