@@ -17,7 +17,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { SuiClient } = require('@mysten/sui/client');
 const { execSync } = require('child_process');
-const { checkBatchSequence, checkSettlementSequence } = require('./check-sequence');
+const { checkBatchSequence, checkSettlementSequence } = require('./status');
+const config = require('./config');
 
 // Load libas for Falcon crypto operations
 const libasPath = path.join(__dirname, '../../libas');
@@ -26,8 +27,18 @@ const libas = require(libasPath);
 class LiveQuantumDemo {
   constructor() {
     this.client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-    this.packageId = '0xd64ce8879c11168550fc4b2586c7063d785803a0b4a14900c35bdaee204d9e5b';
-    this.settlementStateId = '0xb618969c40f830f074e9847bc1a7d3c81681e68957fbb2071f1d561cf44967f5';
+    
+    // Load configuration from deployment.json
+    console.log('🔧 Loading deployment configuration...');
+    this.packageId = config.packageId;
+    this.settlementStateId = config.settlementStateId;
+    this.treasuryId = config.treasuryId;
+    this.adminAddress = config.adminAddress;
+    
+    console.log(`📦 Package ID: ${this.packageId}`);
+    console.log(`⚙️  Settlement State: ${this.settlementStateId}`);
+    console.log(`🏦 Treasury: ${this.treasuryId}`);
+    console.log(`👑 Admin: ${this.adminAddress}`);
     
     // Users will be dynamically created
     this.users = {};
@@ -357,7 +368,7 @@ class LiveQuantumDemo {
     
     try {
       // Switch to admin address first
-      execSync('sui client switch --address 0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', { stdio: 'pipe' });
+      execSync(`sui client switch --address ${this.adminAddress}`, { stdio: 'pipe' });
       
       // Execute the settlement
       const result = execSync(command, { 
@@ -426,12 +437,12 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function add_minter',
-        `--args 0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e`, // Treasury ID
-        '0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', // Admin address
+        `--args ${this.treasuryId}`, // Treasury ID
+        this.adminAddress, // Admin address
         '--gas-budget 20000000'
       ].join(' ');
       
-      execSync('sui client switch --address 0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', { stdio: 'pipe' });
+      execSync(`sui client switch --address ${this.adminAddress}`, { stdio: 'pipe' });
       
       try {
         execSync(addMinterCommand, { stdio: 'pipe' });
@@ -459,7 +470,7 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function batch_mint',
-        `--args 0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e`, // Treasury ID
+        `--args ${this.treasuryId}`, // Treasury ID
         `"[${usersToFund.join(',')}]"`,
         `"[${amountsToMint.join(',')}]"`,
         nextSequence.toString(),
@@ -675,7 +686,7 @@ class LiveQuantumDemo {
           console.log(`${emoji} ${name.toUpperCase().padEnd(6)}: ${initialTotal} → ${finalTotal} (${changeStr} QUSD)`);
         }
         
-        console.log('\n🔐 This proves quantum-resistant signatures work with blockchain settlement! 🚀');
+        console.log('\n🔐 Demo completed... One step closer to making Sui quantum secure! 🚀');
         
       } else {
         console.log('\n❌ Settlement failed. Please check the logs above.');
@@ -694,4 +705,4 @@ if (require.main === module) {
   demo.runLiveDemo().catch(console.error);
 }
 
-module.exports = LiveQuantumDemo; 
+module.exports = LiveQuantumDemo;

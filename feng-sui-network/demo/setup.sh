@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Automated Contract Deployment and Configuration Update Script
-# This script deploys the QUSD contracts and automatically updates all configuration files
+# This script deploys the QUSD contracts and creates deployment.json config
 
 set -e  # Exit on any error
 
@@ -36,28 +36,12 @@ echo "   Admin Address: $ADMIN_ADDRESS"
 # Navigate back to root
 cd ..
 
-# Update live-quantum-demo.js
-echo "🔄 Updating live-quantum-demo.js..."
-sed -i "s/this\.packageId = '0x[a-fA-F0-9]*'/this.packageId = '$PACKAGE_ID'/" feng-sui-network/scripts/live-quantum-demo.js
-sed -i "s/this\.settlementStateId = '0x[a-fA-F0-9]*'/this.settlementStateId = '$SETTLEMENT_STATE_ID'/" feng-sui-network/scripts/live-quantum-demo.js
+# Navigate back to demo directory
+cd feng-sui-network/demo
 
-# Update treasury ID references in live-quantum-demo.js
-sed -i 's/`--args 0x[a-fA-F0-9]*`, \/\/ Treasury ID/`--args '$TREASURY_ID'`, \/\/ Treasury ID/g' feng-sui-network/scripts/live-quantum-demo.js
-
-# Update admin address references
-sed -i "s/0x[a-fA-F0-9]*', \/\/ Admin address/$ADMIN_ADDRESS', \/\/ Admin address/g" feng-sui-network/scripts/live-quantum-demo.js
-sed -i "s/sui client switch --address 0x[a-fA-F0-9]*/sui client switch --address $ADMIN_ADDRESS/g" feng-sui-network/scripts/live-quantum-demo.js
-
-# Update check-sequence.js
-echo "🔄 Updating check-sequence.js..."
-sed -i "s/const packageId = '0x[a-fA-F0-9]*'/const packageId = '$PACKAGE_ID'/" feng-sui-network/scripts/check-sequence.js
-sed -i "s/const treasuryId = '0x[a-fA-F0-9]*'/const treasuryId = '$TREASURY_ID'/" feng-sui-network/scripts/check-sequence.js
-sed -i "s/const settlementStateId = '0x[a-fA-F0-9]*'/const settlementStateId = '$SETTLEMENT_STATE_ID'/" feng-sui-network/scripts/check-sequence.js
-sed -i "s/sender: '0x[a-fA-F0-9]*'/sender: '$ADMIN_ADDRESS'/g" feng-sui-network/scripts/check-sequence.js
-
-# Create/update config file for future reference
-echo "📝 Creating config file..."
-cat > config/deployment.json << EOF
+# Create/update config file for scripts to read from
+echo "📝 Creating deployment configuration..."
+cat > config.json << EOF
 {
   "packageId": "$PACKAGE_ID",
   "treasuryId": "$TREASURY_ID",
@@ -67,6 +51,8 @@ cat > config/deployment.json << EOF
   "network": "localnet"
 }
 EOF
+
+echo "✅ Configuration file created at config.json"
 
 # Add admin as minter
 echo "🔑 Adding admin as authorized minter..."
@@ -82,8 +68,8 @@ echo ""
 echo "🎉 Deployment and configuration complete!"
 echo "📋 Summary:"
 echo "   ✅ Contracts deployed and built"
-echo "   ✅ Configuration files updated"
+echo "   ✅ Configuration saved to config.json"
+echo "   ✅ Scripts will automatically read from config file"
 echo "   ✅ Admin authorized as minter"
-echo "   ✅ Deployment info saved to config/deployment.json"
 echo ""
-echo "🚀 Ready to run the demo with: node feng-sui-network/scripts/live-quantum-demo.js" 
+echo "🚀 Ready to run the demo with: node feng-sui-network/demo/demo.js" 
