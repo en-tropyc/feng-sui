@@ -28,6 +28,7 @@ You should see: 🎉 Deployment and configuration complete!
 ```bash
 node feng-sui-network/demo/demo.js
 ```
+Track finalized transactions on [Suiscan](https://custom.suiscan.xyz/) or other explorer
 
 ## What You'll See
 
