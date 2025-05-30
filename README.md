@@ -22,13 +22,13 @@ This script automatically:
 - Creates `config.json` configuration
 - Authorizes admin as minter
 
-You should see: 🎉 Deployment and configuration complete!
+Upon success you should see: `🎉 Deployment and configuration complete!`
 
 ### 4. Run Live Demo
 ```bash
 node feng-sui-network/demo/demo.js
 ```
-Track finalized transactions on [Suiscan](https://custom.suiscan.xyz/) or other explorer
+Track finalized transactions on [Suiscan](https://custom.suiscan.xyz/) or other explorer.
 
 ## What You'll See
 
