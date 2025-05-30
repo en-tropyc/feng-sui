@@ -26,8 +26,8 @@ const libas = require(libasPath);
 class LiveQuantumDemo {
   constructor() {
     this.client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-    this.packageId = '0x85130d00c41129b40066397e664db755cf2711c660644937e309eff2a59168c4';
-    this.settlementStateId = '0x09870818153edca1cead7c49943d0962b920d2ee20e93af4dd67d3d0cf7b479d';
+    this.packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
+    this.settlementStateId = '0x1267a8d011b188fe33865c43fbe131c9b817b76dbd3ceb2c47485a7cde513e6b';
     
     // Users will be dynamically created
     this.users = {};
@@ -357,7 +357,7 @@ class LiveQuantumDemo {
     
     try {
       // Switch to admin address first
-      execSync('sui client switch --address 0xf1c3d2d98f56fc397f2855b31cb9245f2778b71891debe4229dc77e9a5d31791', { stdio: 'pipe' });
+      execSync('sui client switch --address 0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', { stdio: 'pipe' });
       
       // Execute the settlement
       const result = execSync(command, { 
@@ -426,12 +426,12 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function add_minter',
-        `--args 0xc6044fc294fd88a39094dcba1f8159d1b04a64a1ec049087ccb760462a3132b7`, // Treasury ID
-        '0xf1c3d2d98f56fc397f2855b31cb9245f2778b71891debe4229dc77e9a5d31791', // Admin address
+        `--args 0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0`, // Treasury ID
+        '0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', // Admin address
         '--gas-budget 20000000'
       ].join(' ');
       
-      execSync('sui client switch --address 0xf1c3d2d98f56fc397f2855b31cb9245f2778b71891debe4229dc77e9a5d31791', { stdio: 'pipe' });
+      execSync('sui client switch --address 0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', { stdio: 'pipe' });
       
       try {
         execSync(addMinterCommand, { stdio: 'pipe' });
@@ -459,7 +459,7 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function batch_mint',
-        `--args 0xc6044fc294fd88a39094dcba1f8159d1b04a64a1ec049087ccb760462a3132b7`, // Treasury ID
+        `--args 0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0`, // Treasury ID
         `"[${usersToFund.join(',')}]"`,
         `"[${amountsToMint.join(',')}]"`,
         nextSequence.toString(),
@@ -492,7 +492,7 @@ class LiveQuantumDemo {
   }
 
   async initiateTransactionsAndEscrow() {
-    console.log('\n🎯 TRANSACTION INITIATION & ESCROW DEPOSITS');
+    console.log('\n🎯 TRANSACTION INITIATION & PRECISE ESCROW DEPOSITS');
     console.log('═'.repeat(80));
     
     // Define transaction intents (what users want to do)
@@ -515,7 +515,7 @@ class LiveQuantumDemo {
       escrowNeeded[tx.from] += tx.amount;
     });
     
-    console.log('\n🔒 Processing escrow deposits:');
+    console.log('\n🔒 Processing precise escrow deposits (depositing only what\'s needed):');
     
     // Deposit escrow for each user using direct sui client commands
     for (const [userName, amount] of Object.entries(escrowNeeded)) {
@@ -552,17 +552,15 @@ class LiveQuantumDemo {
         const requiredBaseUnits = amount * 100000000;
         
         console.log(`   📊 User has ${coinBalance / 100000000} QUSD, needs to deposit ${amount} QUSD`);
-        console.log(`   ⚠️  Note: Current implementation deposits entire coin (${coinBalance / 100000000} QUSD) to escrow`);
-        console.log(`   💡 In production, this would be optimized to split coins precisely`);
+        console.log(`   💡 Using new partial deposit function to deposit exactly ${amount} QUSD`);
         
-        // For now, deposit the entire coin (this is a limitation of the current demo)
-        // In production, you'd implement proper coin splitting
+        // Use the new deposit_for_transfer function for precise deposits
         const command = [
           'sui client call',
           `--package ${this.packageId}`,
           '--module settlement',
-          '--function deposit_to_escrow',
-          `--args ${this.settlementStateId} ${firstQusdCoin}`,
+          '--function deposit_for_transfer',
+          `--args ${this.settlementStateId} ${firstQusdCoin} ${requiredBaseUnits}`,
           '--gas-budget 20000000'
         ].join(' ');
         
@@ -571,7 +569,8 @@ class LiveQuantumDemo {
           stdio: 'pipe'
         });
         
-        console.log(`   ✅ ${userName.toUpperCase()} deposited ${amount} QUSD to escrow`);
+        console.log(`   ✅ ${userName.toUpperCase()} deposited exactly ${amount} QUSD to escrow`);
+        console.log(`   💰 Remaining ${(coinBalance - requiredBaseUnits) / 100000000} QUSD returned to wallet`);
       } catch (error) {
         console.error(`   ❌ Escrow deposit failed for ${userName}:`, error.message);
         throw new Error(`Escrow deposit failed for ${userName}: ${error.message}`);
@@ -595,7 +594,7 @@ class LiveQuantumDemo {
     console.log('1. 🏗️  Create fresh demo users with new Sui addresses');
     console.log('2. ⛽ Fund each user with SUI for gas fees');
     console.log('3. 💰 Fund users with QUSD for transactions');
-    console.log('4. 🎯 Users initiate transactions & deposit required escrow');
+    console.log('4. 🎯 Users initiate transactions & deposit required escrow with precise coin splitting');
     console.log('5. 🔐 Generate quantum-resistant Falcon-512 signatures');
     console.log('6. 🔗 Aggregate signatures using advanced cryptography');
     console.log('7. ✅ Verify aggregate signature integrity');

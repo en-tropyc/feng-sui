@@ -926,4 +926,91 @@ module qusd_contracts::qusd_tests {
 
         test::end(scenario);
     }
+
+    #[test]
+    fun test_partial_deposit_functionality() {
+        let mut scenario = test::begin(ADMIN);
+        
+        // Initialize the system
+        {
+            let ctx = test::ctx(&mut scenario);
+            qusd::init_for_testing(ctx);
+            settlement::init_for_testing(ctx);
+        };
+        
+        // Get the objects
+        test::next_tx(&mut scenario, ADMIN);
+        let mut treasury = test::take_shared<Treasury>(&scenario);
+        let mut settlement_state = test::take_shared<SettlementState>(&scenario);
+        
+        // Add as authorized minter
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let ctx = test::ctx(&mut scenario);
+            qusd::add_minter(&mut treasury, ADMIN, ctx);
+        };
+        
+        // Mint some QUSD
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let ctx = test::ctx(&mut scenario);
+            let recipients = vector[ADMIN];
+            let amounts = vector[1000];
+            qusd::batch_mint(&mut treasury, recipients, amounts, 1, ctx);
+        };
+        
+        // Get the minted coin
+        test::next_tx(&mut scenario, ADMIN);
+        let coin = test::take_from_sender<coin::Coin<QUSD>>(&scenario);
+        
+        // Test partial deposit: deposit 300 out of 1000
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let ctx = test::ctx(&mut scenario);
+            settlement::deposit_partial_to_escrow(&mut settlement_state, coin, 300, ctx);
+        };
+        
+        // Check that escrow balance is 300
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let escrow_balance = settlement::get_escrow_balance(&settlement_state, ADMIN);
+            assert!(escrow_balance == 300, 101);
+            
+            let total_escrow = settlement::get_total_escrow(&settlement_state);
+            assert!(total_escrow == 300, 102);
+        };
+        
+        // Get the returned coin (should be 700)
+        let returned_coin = test::take_from_sender<coin::Coin<QUSD>>(&scenario);
+        assert!(coin::value(&returned_coin) == 700, 103);
+        
+        // Test deposit_for_transfer functionality
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let ctx = test::ctx(&mut scenario);
+            // Need 500 total for transfer, currently have 300 in escrow
+            // Should deposit exactly 200 more and return 500
+            settlement::deposit_for_transfer(&mut settlement_state, returned_coin, 500, ctx);
+        };
+        
+        // Check that escrow balance is now 500
+        test::next_tx(&mut scenario, ADMIN);
+        {
+            let escrow_balance = settlement::get_escrow_balance(&settlement_state, ADMIN);
+            assert!(escrow_balance == 500, 104);
+            
+            let total_escrow = settlement::get_total_escrow(&settlement_state);
+            assert!(total_escrow == 500, 105);
+        };
+        
+        // Get the returned coin (should be 500)
+        let final_coin = test::take_from_sender<coin::Coin<QUSD>>(&scenario);
+        assert!(coin::value(&final_coin) == 500, 106);
+        
+        // Clean up
+        test::return_to_sender(&scenario, final_coin);
+        test::return_shared(treasury);
+        test::return_shared(settlement_state);
+        test::end(scenario);
+    }
 } 

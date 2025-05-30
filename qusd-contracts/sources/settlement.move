@@ -120,6 +120,135 @@ module qusd_contracts::settlement {
         });
     }
 
+    /// Deposit a specific amount of QUSD to escrow and return the remainder
+    /// This allows partial deposits from a larger coin
+    public entry fun deposit_partial_to_escrow(
+        settlement_state: &mut SettlementState,
+        coin: Coin<QUSD>,
+        deposit_amount: u64,
+        ctx: &mut TxContext
+    ) {
+        assert!(deposit_amount > 0, E_ZERO_AMOUNT);
+        
+        let coin_value = coin::value(&coin);
+        assert!(coin_value >= deposit_amount, E_INSUFFICIENT_BALANCE);
+        
+        let user = tx_context::sender(ctx);
+        
+        // Calculate current balance
+        let current_balance = if (settlement_state.user_balances.contains(user)) {
+            *settlement_state.user_balances.borrow(user)
+        } else {
+            settlement_state.user_balances.add(user, 0);
+            0
+        };
+        
+        if (coin_value == deposit_amount) {
+            // Deposit the entire coin
+            let new_balance = current_balance + deposit_amount;
+            *settlement_state.user_balances.borrow_mut(user) = new_balance;
+            
+            coin::join(&mut settlement_state.escrow_treasury, coin);
+            
+            event::emit(EscrowDeposit {
+                user,
+                amount: deposit_amount,
+                new_balance,
+            });
+        } else {
+            // Split coin: deposit specified amount, return the rest
+            let mut remaining_coin = coin;
+            let deposit_coin = coin::split(&mut remaining_coin, deposit_amount, ctx);
+            
+            let new_balance = current_balance + deposit_amount;
+            *settlement_state.user_balances.borrow_mut(user) = new_balance;
+            
+            // Add deposit coin to escrow treasury
+            coin::join(&mut settlement_state.escrow_treasury, deposit_coin);
+            
+            // Return remaining coin to user
+            transfer::public_transfer(remaining_coin, user);
+            
+            event::emit(EscrowDeposit {
+                user,
+                amount: deposit_amount,
+                new_balance,
+            });
+        }
+    }
+
+    /// Deposit exactly the amount needed for a transfer (if insufficient escrow balance)
+    /// This is a convenience function that calculates the needed deposit automatically
+    public entry fun deposit_for_transfer(
+        settlement_state: &mut SettlementState,
+        coin: Coin<QUSD>,
+        transfer_amount: u64,
+        ctx: &mut TxContext
+    ) {
+        assert!(transfer_amount > 0, E_ZERO_AMOUNT);
+        
+        let user = tx_context::sender(ctx);
+        
+        // Calculate current balance
+        let current_balance = if (settlement_state.user_balances.contains(user)) {
+            *settlement_state.user_balances.borrow(user)
+        } else {
+            0
+        };
+        
+        // Check if we need to deposit anything
+        if (current_balance >= transfer_amount) {
+            // User already has enough, just return the coin
+            transfer::public_transfer(coin, user);
+        } else {
+            // Calculate how much we need to deposit
+            let needed_amount = transfer_amount - current_balance;
+            let coin_value = coin::value(&coin);
+            
+            assert!(coin_value >= needed_amount, E_INSUFFICIENT_BALANCE);
+            
+            if (coin_value == needed_amount) {
+                // Deposit the entire coin
+                let new_balance = current_balance + coin_value;
+                
+                if (settlement_state.user_balances.contains(user)) {
+                    *settlement_state.user_balances.borrow_mut(user) = new_balance;
+                } else {
+                    settlement_state.user_balances.add(user, new_balance);
+                };
+                
+                coin::join(&mut settlement_state.escrow_treasury, coin);
+                
+                event::emit(EscrowDeposit {
+                    user,
+                    amount: coin_value,
+                    new_balance,
+                });
+            } else {
+                // Split coin: deposit only what's needed, return the rest
+                let mut remaining_coin = coin;
+                let deposit_coin = coin::split(&mut remaining_coin, needed_amount, ctx);
+                
+                let new_balance = current_balance + needed_amount;
+                
+                if (settlement_state.user_balances.contains(user)) {
+                    *settlement_state.user_balances.borrow_mut(user) = new_balance;
+                } else {
+                    settlement_state.user_balances.add(user, new_balance);
+                };
+                
+                coin::join(&mut settlement_state.escrow_treasury, deposit_coin);
+                transfer::public_transfer(remaining_coin, user);
+                
+                event::emit(EscrowDeposit {
+                    user,
+                    amount: needed_amount,
+                    new_balance,
+                });
+            }
+        }
+    }
+
     /// Withdraw QUSD from escrow
     public entry fun withdraw_from_escrow(
         settlement_state: &mut SettlementState,

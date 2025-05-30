@@ -3,8 +3,8 @@ const { Transaction } = require('@mysten/sui/transactions');
 
 async function checkBatchSequence() {
   const client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-  const packageId = '0x85130d00c41129b40066397e664db755cf2711c660644937e309eff2a59168c4';
-  const treasuryId = '0xc6044fc294fd88a39094dcba1f8159d1b04a64a1ec049087ccb760462a3132b7';
+  const packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
+  const treasuryId = '0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0';
   
   console.log('🔍 Checking QUSD Treasury Batch Sequence...');
   
@@ -17,7 +17,7 @@ async function checkBatchSequence() {
     
     const result = await client.devInspectTransactionBlock({
       transactionBlock: tx,
-      sender: '0xf1c3d2d98f56fc397f2855b31cb9245f2778b71891debe4229dc77e9a5d31791',
+      sender: '0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe',
     });
     
     if (result.results && result.results[0] && result.results[0].returnValues) {
@@ -38,8 +38,8 @@ async function checkBatchSequence() {
 
 async function checkSettlementSequence() {
   const client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-  const packageId = '0x85130d00c41129b40066397e664db755cf2711c660644937e309eff2a59168c4';
-  const settlementStateId = '0x09870818153edca1cead7c49943d0962b920d2ee20e93af4dd67d3d0cf7b479d';
+  const packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
+  const settlementStateId = '0x1267a8d011b188fe33865c43fbe131c9b817b76dbd3ceb2c47485a7cde513e6b';
   
   console.log('🔍 Checking Settlement Current Sequence...');
   
@@ -52,7 +52,7 @@ async function checkSettlementSequence() {
     
     const result = await client.devInspectTransactionBlock({
       transactionBlock: tx,
-      sender: '0xf1c3d2d98f56fc397f2855b31cb9245f2778b71891debe4229dc77e9a5d31791',
+      sender: '0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe',
     });
     
     if (result.results && result.results[0] && result.results[0].returnValues) {
