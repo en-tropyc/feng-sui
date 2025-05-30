@@ -3,8 +3,8 @@ const { Transaction } = require('@mysten/sui/transactions');
 
 async function checkBatchSequence() {
   const client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-  const packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
-  const treasuryId = '0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0';
+  const packageId = '0xd64ce8879c11168550fc4b2586c7063d785803a0b4a14900c35bdaee204d9e5b';
+  const treasuryId = '0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e';
   
   console.log('🔍 Checking QUSD Treasury Batch Sequence...');
   
@@ -38,8 +38,8 @@ async function checkBatchSequence() {
 
 async function checkSettlementSequence() {
   const client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-  const packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
-  const settlementStateId = '0x1267a8d011b188fe33865c43fbe131c9b817b76dbd3ceb2c47485a7cde513e6b';
+  const packageId = '0xd64ce8879c11168550fc4b2586c7063d785803a0b4a14900c35bdaee204d9e5b';
+  const settlementStateId = '0xb618969c40f830f074e9847bc1a7d3c81681e68957fbb2071f1d561cf44967f5';
   
   console.log('🔍 Checking Settlement Current Sequence...');
   

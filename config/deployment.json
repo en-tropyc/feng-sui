@@ -1,0 +1,8 @@
+{
+  "packageId": "0xd64ce8879c11168550fc4b2586c7063d785803a0b4a14900c35bdaee204d9e5b",
+  "treasuryId": "0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e",
+  "settlementStateId": "0xb618969c40f830f074e9847bc1a7d3c81681e68957fbb2071f1d561cf44967f5",
+  "adminAddress": "0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe",
+  "deploymentDate": "2025-05-30T18:07:14Z",
+  "network": "localnet"
+}

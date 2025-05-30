@@ -26,8 +26,8 @@ const libas = require(libasPath);
 class LiveQuantumDemo {
   constructor() {
     this.client = new SuiClient({ url: 'http://127.0.0.1:9000' });
-    this.packageId = '0xc02d533bd6412192ca6fc90463dcd118dfe0101c8083c956e68524215611da23';
-    this.settlementStateId = '0x1267a8d011b188fe33865c43fbe131c9b817b76dbd3ceb2c47485a7cde513e6b';
+    this.packageId = '0xd64ce8879c11168550fc4b2586c7063d785803a0b4a14900c35bdaee204d9e5b';
+    this.settlementStateId = '0xb618969c40f830f074e9847bc1a7d3c81681e68957fbb2071f1d561cf44967f5';
     
     // Users will be dynamically created
     this.users = {};
@@ -426,7 +426,7 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function add_minter',
-        `--args 0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0`, // Treasury ID
+        `--args 0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e`, // Treasury ID
         '0x7eca513ab0e0f17c2456f0935868928bf091370a974d1fa8884e562a9793d6fe', // Admin address
         '--gas-budget 20000000'
       ].join(' ');
@@ -459,7 +459,7 @@ class LiveQuantumDemo {
         `--package ${this.packageId}`,
         '--module qusd',
         '--function batch_mint',
-        `--args 0x43fa9f9665b8456a60caa7aeecc7d3a0422c03dffe63756e550c0050b6da87e0`, // Treasury ID
+        `--args 0xd3f6e0ade58c6c0b7d588e296595bd6d73deac52c667f5b72a38770522e6275e`, // Treasury ID
         `"[${usersToFund.join(',')}]"`,
         `"[${amountsToMint.join(',')}]"`,
         nextSequence.toString(),
