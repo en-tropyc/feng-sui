@@ -1,4 +1,4 @@
-Demonstration of quantum-resistant payments using Falcon-512 signatures and escrow deposits on Sui blockchain.
+Demonstration of quantum-resistant payments using Falcon-512 signatures and escrow deposits on Sui.
 
 ## Quick Start
 
