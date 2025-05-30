@@ -29,24 +29,8 @@ class LiveQuantumDemo {
     this.packageId = '0x85130d00c41129b40066397e664db755cf2711c660644937e309eff2a59168c4';
     this.settlementStateId = '0x09870818153edca1cead7c49943d0962b920d2ee20e93af4dd67d3d0cf7b479d';
     
-    this.users = {
-      alice: { 
-        address: '0x781d872ead4b51181fe261a623d573596acf1b691d5ae7ed5aebfb502300e66c',
-        role: 'sender' 
-      },
-      bob: { 
-        address: '0xdb05caedf2b8f498b66b0b377d582ac7255f12d4933e32d98522e5ac08aa1e16',
-        role: 'recipient' 
-      },
-      carol: { 
-        address: '0x8a6b3ec6fcb38bcaf4164c48d9fc63fb809e119d27e9666942d50961c45b396f',
-        role: 'sender' 
-      },
-      dave: { 
-        address: '0x96db4425e607a11e3ede3a75fc82bb7b26446ae1924390fc0c4eb2845db2da59',
-        role: 'recipient' 
-      }
-    };
+    // Users will be dynamically created
+    this.users = {};
   }
 
   async sleep(ms) {
@@ -55,6 +39,139 @@ class LiveQuantumDemo {
 
   clearScreen() {
     process.stdout.write('\x1b[2J\x1b[0f');
+  }
+
+  async createNewSuiAddress() {
+    console.log('🔧 Generating new Sui address...');
+    try {
+      const result = execSync('sui client new-address ed25519', { 
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+      
+      // Extract address from output - looks for pattern like "Created new keypair and saved it to keystore."
+      // followed by "0x..." address
+      const addressMatch = result.match(/0x[a-fA-F0-9]+/);
+      if (!addressMatch) {
+        throw new Error('Could not extract address from sui client output');
+      }
+      
+      const address = addressMatch[0];
+      console.log(`   ✅ Generated: ${address}`);
+      return address;
+    } catch (error) {
+      console.error('❌ Failed to create new address:', error.message);
+      throw error;
+    }
+  }
+
+  async getSuiBalance(address) {
+    try {
+      const balance = await this.client.getBalance({
+        owner: address,
+        coinType: '0x2::sui::SUI'
+      });
+      return parseInt(balance.totalBalance);
+    } catch (error) {
+      return 0; // If error, assume 0 balance
+    }
+  }
+
+  async requestFaucetFunding(address) {
+    console.log(`   💰 Requesting SUI from faucet for ${address.slice(0, 8)}...`);
+    try {
+      const result = execSync(`curl -X POST "http://127.0.0.1:9123/gas" -H "Content-Type: application/json" -d '{"FixedAmountRequest": {"recipient": "${address}"}}'`, {
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+      
+      // Check if the request was successful
+      if (result.includes('error') || result.includes('Error')) {
+        throw new Error(`Faucet request failed: ${result}`);
+      }
+      
+      console.log(`   ✅ Faucet request submitted`);
+      return true;
+    } catch (error) {
+      console.log(`   ⚠️  Faucet request failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  async waitForFunding(address, minBalance = 1000000000, maxWaitTime = 10000) {
+    console.log(`   ⏳ Waiting for funding to appear...`);
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < maxWaitTime) {
+      const balance = await this.getSuiBalance(address);
+      if (balance >= minBalance) {
+        console.log(`   ✅ Funding confirmed: ${balance / 1000000000} SUI`);
+        return true;
+      }
+      await this.sleep(1000); // Wait 1 second before checking again
+    }
+    
+    console.log(`   ❌ Funding timeout after ${maxWaitTime/1000}s`);
+    return false;
+  }
+
+  async ensureGasFunding(address, minBalance = 1000000000) { // 1 SUI minimum
+    const currentBalance = await this.getSuiBalance(address);
+    
+    if (currentBalance >= minBalance) {
+      console.log(`   ✅ Already funded: ${currentBalance / 1000000000} SUI`);
+      return true;
+    }
+    
+    console.log(`   💸 Current balance: ${currentBalance / 1000000000} SUI (need ${minBalance / 1000000000} SUI)`);
+    
+    // Request funding from faucet
+    const faucetSuccess = await this.requestFaucetFunding(address);
+    if (!faucetSuccess) {
+      throw new Error('Faucet funding request failed');
+    }
+    
+    // Wait for funding to appear
+    const fundingSuccess = await this.waitForFunding(address, minBalance);
+    if (!fundingSuccess) {
+      throw new Error('Funding verification failed');
+    }
+    
+    return true;
+  }
+
+  async generateDemoUsers() {
+    console.log('\n🏗️  CREATING DEMO USERS');
+    console.log('═'.repeat(80));
+    
+    const userRoles = {
+      alice: 'sender',
+      bob: 'recipient', 
+      carol: 'sender',
+      dave: 'recipient'
+    };
+    
+    for (const [name, role] of Object.entries(userRoles)) {
+      console.log(`\n👤 Creating ${name.toUpperCase()}:`);
+      
+      // Generate new address
+      const address = await this.createNewSuiAddress();
+      
+      // Ensure gas funding
+      await this.ensureGasFunding(address);
+      
+      this.users[name] = { 
+        address, 
+        role,
+        isNewlyCreated: true 
+      };
+      
+      console.log(`   🎯 ${name.toUpperCase()} ready: ${address}`);
+      await this.sleep(500);
+    }
+    
+    console.log('\n🎉 All demo users created and funded!');
+    return this.users;
   }
 
   async checkUserBalance(name, address) {
@@ -388,21 +505,28 @@ class LiveQuantumDemo {
     console.log('🌟'.repeat(40));
     console.log('');
     console.log('This demo will show real-time balance changes as we:');
-    console.log('1. 🔐 Generate quantum-resistant Falcon-512 signatures');
-    console.log('2. 🔗 Aggregate signatures using advanced cryptography');
-    console.log('3. ✅ Verify aggregate signature integrity');
-    console.log('4. ⚡ Execute settlement on Sui blockchain');
-    console.log('5. 📊 Show final balance changes');
+    console.log('1. 🏗️  Create fresh demo users with new Sui addresses');
+    console.log('2. ⛽ Fund each user with SUI for gas fees');
+    console.log('3. 💰 Fund users with QUSD for transactions');
+    console.log('4. 🔐 Generate quantum-resistant Falcon-512 signatures');
+    console.log('5. 🔗 Aggregate signatures using advanced cryptography');
+    console.log('6. ✅ Verify aggregate signature integrity');
+    console.log('7. ⚡ Execute settlement on Sui blockchain');
+    console.log('8. 📊 Show final balance changes');
     
     console.log('\n⏳ Starting demo in 3 seconds...');
     await this.sleep(3000);
 
     try {
-      // Step 1: Initial balances
+      // Step 1: Generate demo users with fresh addresses
+      await this.generateDemoUsers();
+      await this.sleep(2000);
+
+      // Step 2: Initial balances  
       const initialBalances = await this.displayCurrentBalances('STEP 1: INITIAL BALANCES');
       await this.sleep(2000);
 
-      // Step 2: Fund users with sufficient QUSD
+      // Step 3: Fund users with sufficient QUSD
       const fundingSuccess = await this.fundUsersWithQUSD();
       
       if (!fundingSuccess) {
@@ -412,11 +536,11 @@ class LiveQuantumDemo {
       
       await this.sleep(2000);
 
-      // Step 3: Show balances after funding
+      // Step 4: Show balances after funding
       const postFundingBalances = await this.displayCurrentBalances('STEP 2: POST-FUNDING BALANCES', true, initialBalances);
       await this.sleep(2000);
 
-      // Step 4: Generate signatures
+      // Step 5: Generate signatures
       const { transactions, aggregateSignature, isValid } = await this.generateFalconSignatures();
       
       if (!isValid) {
@@ -426,17 +550,17 @@ class LiveQuantumDemo {
       
       await this.sleep(2000);
 
-      // Step 5: Show balances before settlement  
+      // Step 6: Show balances before settlement  
       const preSettlementBalances = await this.displayCurrentBalances('STEP 3: PRE-SETTLEMENT BALANCES', true, postFundingBalances);
       await this.sleep(2000);
 
-      // Step 6: Execute settlement
+      // Step 7: Execute settlement
       const settlementSuccess = await this.executeSettlement(transactions);
       
       if (settlementSuccess) {
         await this.sleep(3000); // Wait for settlement to complete
         
-        // Step 7: Final balances
+        // Step 8: Final balances
         const finalBalances = await this.displayCurrentBalances('STEP 4: POST-SETTLEMENT BALANCES', true, preSettlementBalances);
         
         // Summary
