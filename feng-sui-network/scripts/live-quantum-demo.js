@@ -243,7 +243,7 @@ class LiveQuantumDemo {
     return currentBalances;
   }
 
-  async generateFalconSignatures() {
+  async generateFalconSignatures(transactions) {
     console.log('\n🔐 GENERATING QUANTUM-RESISTANT SIGNATURES');
     console.log('═'.repeat(80));
     
@@ -256,16 +256,10 @@ class LiveQuantumDemo {
       await this.sleep(500);
     }
 
-    // Define the transaction batch (adjusted for current balances)
-    const transactions = [
-      { id: 'tx001', from: 'alice', to: 'bob', amount: 10, description: '☕ Coffee payment' },
-      { id: 'tx002', from: 'alice', to: 'dave', amount: 15, description: '💼 Small consulting fee' }, 
-      { id: 'tx003', from: 'bob', to: 'carol', amount: 20, description: '🍕 Lunch payment' },
-      { id: 'tx004', from: 'dave', to: 'alice', amount: 5, description: '💸 Reimbursement' }
-    ];
-
     console.log('\n📋 TRANSACTION BATCH:');
     transactions.forEach((tx, i) => {
+      // Add IDs for signature generation
+      tx.id = `tx${(i+1).toString().padStart(3, '0')}`;
       console.log(`${i+1}. ${tx.id}: ${tx.from.toUpperCase()} → ${tx.to.toUpperCase()} (${tx.amount} QUSD) - ${tx.description}`);
     });
 
@@ -497,6 +491,99 @@ class LiveQuantumDemo {
     return true;
   }
 
+  async initiateTransactionsAndEscrow() {
+    console.log('\n🎯 TRANSACTION INITIATION & ESCROW DEPOSITS');
+    console.log('═'.repeat(80));
+    
+    // Define transaction intents (what users want to do)
+    const transactions = [
+      { from: 'alice', to: 'bob', amount: 10, description: '☕ Coffee payment' },
+      { from: 'alice', to: 'dave', amount: 15, description: '💼 Small consulting fee' }, 
+      { from: 'bob', to: 'carol', amount: 20, description: '🍕 Lunch payment' },
+      { from: 'dave', to: 'alice', amount: 5, description: '💸 Reimbursement' }
+    ];
+    
+    console.log('💭 Users initiating quantum-resistant transactions:');
+    transactions.forEach((tx, i) => {
+      console.log(`${i+1}. ${tx.from.toUpperCase()}: "I want to send ${tx.to.toUpperCase()} ${tx.amount} QUSD for ${tx.description}"`);
+    });
+    
+    // Calculate escrow needed per user
+    const escrowNeeded = {};
+    transactions.forEach(tx => {
+      if (!escrowNeeded[tx.from]) escrowNeeded[tx.from] = 0;
+      escrowNeeded[tx.from] += tx.amount;
+    });
+    
+    console.log('\n🔒 Processing escrow deposits:');
+    
+    // Deposit escrow for each user using direct sui client commands
+    for (const [userName, amount] of Object.entries(escrowNeeded)) {
+      console.log(`\n👤 ${userName.toUpperCase()} needs to deposit ${amount} QUSD to escrow`);
+      
+      const userAddress = this.users[userName].address;
+      
+      try {
+        // Switch to user's address and call deposit_to_escrow
+        const { execSync } = require('child_process');
+        
+        execSync(`sui client switch --address ${userAddress}`, { stdio: 'pipe' });
+        
+        console.log(`   🔒 Depositing ${amount} QUSD to escrow...`);
+        
+        // Get user's QUSD coins first
+        const objectsResult = execSync(`sui client objects --json`, { 
+          encoding: 'utf8',
+          stdio: 'pipe'
+        });
+        
+        const objects = JSON.parse(objectsResult);
+        const qusdCoins = objects.filter(obj => 
+          obj.data && obj.data.type && obj.data.type.includes('qusd::QUSD')
+        );
+        
+        if (qusdCoins.length === 0) {
+          throw new Error(`No QUSD coins found for ${userName}`);
+        }
+        
+        // Use the first QUSD coin for deposit
+        const firstQusdCoin = qusdCoins[0].data.objectId;
+        const coinBalance = parseInt(qusdCoins[0].data.content.fields.balance);
+        const requiredBaseUnits = amount * 100000000;
+        
+        console.log(`   📊 User has ${coinBalance / 100000000} QUSD, needs to deposit ${amount} QUSD`);
+        console.log(`   ⚠️  Note: Current implementation deposits entire coin (${coinBalance / 100000000} QUSD) to escrow`);
+        console.log(`   💡 In production, this would be optimized to split coins precisely`);
+        
+        // For now, deposit the entire coin (this is a limitation of the current demo)
+        // In production, you'd implement proper coin splitting
+        const command = [
+          'sui client call',
+          `--package ${this.packageId}`,
+          '--module settlement',
+          '--function deposit_to_escrow',
+          `--args ${this.settlementStateId} ${firstQusdCoin}`,
+          '--gas-budget 20000000'
+        ].join(' ');
+        
+        const result = execSync(command, { 
+          encoding: 'utf8',
+          stdio: 'pipe'
+        });
+        
+        console.log(`   ✅ ${userName.toUpperCase()} deposited ${amount} QUSD to escrow`);
+      } catch (error) {
+        console.error(`   ❌ Escrow deposit failed for ${userName}:`, error.message);
+        throw new Error(`Escrow deposit failed for ${userName}: ${error.message}`);
+      }
+      
+      await this.sleep(1000);
+    }
+    
+    console.log('\n🎉 All escrow deposits complete! Transactions ready for batch processing...');
+    return transactions;
+  }
+
   async runLiveDemo() {
     this.clearScreen();
     
@@ -508,11 +595,12 @@ class LiveQuantumDemo {
     console.log('1. 🏗️  Create fresh demo users with new Sui addresses');
     console.log('2. ⛽ Fund each user with SUI for gas fees');
     console.log('3. 💰 Fund users with QUSD for transactions');
-    console.log('4. 🔐 Generate quantum-resistant Falcon-512 signatures');
-    console.log('5. 🔗 Aggregate signatures using advanced cryptography');
-    console.log('6. ✅ Verify aggregate signature integrity');
-    console.log('7. ⚡ Execute settlement on Sui blockchain');
-    console.log('8. 📊 Show final balance changes');
+    console.log('4. 🎯 Users initiate transactions & deposit required escrow');
+    console.log('5. 🔐 Generate quantum-resistant Falcon-512 signatures');
+    console.log('6. 🔗 Aggregate signatures using advanced cryptography');
+    console.log('7. ✅ Verify aggregate signature integrity');
+    console.log('8. ⚡ Execute settlement on Sui blockchain');
+    console.log('9. 📊 Show final balance changes');
     
     console.log('\n⏳ Starting demo in 3 seconds...');
     await this.sleep(3000);
@@ -540,8 +628,13 @@ class LiveQuantumDemo {
       const postFundingBalances = await this.displayCurrentBalances('STEP 2: POST-FUNDING BALANCES', true, initialBalances);
       await this.sleep(2000);
 
-      // Step 5: Generate signatures
-      const { transactions, aggregateSignature, isValid } = await this.generateFalconSignatures();
+      // Step 3: Transaction initiation & escrow deposits
+      const transactions = await this.initiateTransactionsAndEscrow();
+      const postEscrowBalances = await this.displayCurrentBalances('STEP 3: POST-ESCROW BALANCES', true, postFundingBalances);
+      await this.sleep(2000);
+
+      // Step 4: Generate signatures for the initiated transactions
+      const { aggregateSignature, isValid } = await this.generateFalconSignatures(transactions);
       
       if (!isValid) {
         console.log('\n❌ Signature verification failed. Cannot proceed.');
@@ -550,18 +643,18 @@ class LiveQuantumDemo {
       
       await this.sleep(2000);
 
-      // Step 6: Show balances before settlement  
-      const preSettlementBalances = await this.displayCurrentBalances('STEP 3: PRE-SETTLEMENT BALANCES', true, postFundingBalances);
+      // Step 5: Show balances before settlement  
+      const preSettlementBalances = await this.displayCurrentBalances('STEP 4: PRE-SETTLEMENT BALANCES', true, postEscrowBalances);
       await this.sleep(2000);
 
-      // Step 7: Execute settlement
+      // Step 6: Execute settlement
       const settlementSuccess = await this.executeSettlement(transactions);
       
       if (settlementSuccess) {
         await this.sleep(3000); // Wait for settlement to complete
         
-        // Step 8: Final balances
-        const finalBalances = await this.displayCurrentBalances('STEP 4: POST-SETTLEMENT BALANCES', true, preSettlementBalances);
+        // Step 7: Final balances
+        const finalBalances = await this.displayCurrentBalances('STEP 5: POST-SETTLEMENT BALANCES', true, preSettlementBalances);
         
         // Summary
         console.log('\n🎉 QUANTUM-RESISTANT PAYMENT COMPLETED!');
