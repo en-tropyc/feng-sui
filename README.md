@@ -24,7 +24,7 @@ This script automatically:
 
 Upon success you should see: `🎉 Deployment and configuration complete!`
 
-### 4. Run Live Demo
+### 4. Run Demo
 ```bash
 node feng-sui-network/demo/demo.js
 ```
