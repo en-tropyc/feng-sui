@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Github, Twitter, MessageCircle, Mail, ExternalLink } from 'lucide-react';
+import { Shield, Github, Twitter, MessageCircle, Mail } from 'lucide-react';
 
 const Footer: React.FC = () => {
   const links = {

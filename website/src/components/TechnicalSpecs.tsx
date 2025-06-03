@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Database, Shield, Cpu, Network, Terminal } from 'lucide-react';
+import { Code, Database, Shield, Cpu, Network } from 'lucide-react';
 
 const TechnicalSpecs: React.FC = () => {
   const [activeTab, setActiveTab] = useState('architecture');
