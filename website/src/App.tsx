@@ -5,11 +5,10 @@ import Features from './components/Features';
 import InteractiveDemo from './components/InteractiveDemo';
 import TechnicalSpecs from './components/TechnicalSpecs';
 import Footer from './components/Footer';
-import './App.css';
 
 function App() {
   return (
-    <div className="App bg-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       <Hero />
       <Architecture />
       <Features />
