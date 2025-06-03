@@ -25,19 +25,19 @@ const TechnicalSpecs: React.FC = () => {
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">•</span>
-                  <div><strong className="text-gray-900">FalconCrypto:</strong> Quantum signature engine</div>
+                  <div><strong className="text-gray-900">Libas:</strong> Quantum signature engine</div>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">•</span>
-                  <div><strong className="text-gray-900">TransactionQueue:</strong> Batching & ordering</div>
+                  <div><strong className="text-gray-900">Transaction Queue:</strong> Batching & ordering</div>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">•</span>
-                  <div><strong className="text-gray-900">BatchProcessor:</strong> Signature aggregation</div>
+                  <div><strong className="text-gray-900">Batch Processor:</strong> Signature aggregation</div>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary-500 mt-1">•</span>
-                  <div><strong className="text-gray-900">SuiSettlement:</strong> On-chain execution</div>
+                  <div><strong className="text-gray-900">Sui Settlement:</strong> On-chain execution</div>
                 </li>
               </ul>
             </div>
