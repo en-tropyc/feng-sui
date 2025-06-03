@@ -98,25 +98,25 @@ const Architecture: React.FC = () => {
                   <div className="flex justify-center mb-4">
                     <CheckCircle size={32} className="text-primary-400" />
                   </div>
-                  <h4 className="font-semibold text-white text-lg mb-2">Permanent Records</h4>
-                  <p className="text-primary-300 text-sm font-medium mb-2">Immutable Ledger</p>
-                  <p className="text-gray-400 text-sm">Cannot be altered</p>
+                  <h4 className="font-semibold text-white text-lg mb-2">Escrow Enforcement</h4>
+                  <p className="text-primary-300 text-sm font-medium mb-2">On-Chain Safeguards</p>
+                  <p className="text-gray-400 text-sm">Escrow contract guarantees enforceable capital allocation for quantum transfers.</p>
                 </div>
                 <div className="text-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors duration-200">
                   <div className="flex justify-center mb-4">
                     <Lock size={32} className="text-primary-400" />
                   </div>
-                  <h4 className="font-semibold text-white text-lg mb-2">Network Security</h4>
-                  <p className="text-primary-300 text-sm font-medium mb-2">Validator Consensus</p>
-                  <p className="text-gray-400 text-sm">Decentralized validation</p>
+                  <h4 className="font-semibold text-white text-lg mb-2">Quantum Settlement Proofs</h4>
+                  <p className="text-primary-300 text-sm font-medium mb-2">Batch Verification Interface</p>
+                  <p className="text-gray-400 text-sm">Verifies pre-aggregated Falcon signatures via authorized verifier.</p>
                 </div>
                 <div className="text-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors duration-200">
                   <div className="flex justify-center mb-4">
                     <Scale size={32} className="text-primary-400" />
                   </div>
-                  <h4 className="font-semibold text-white text-lg mb-2">Final Settlement</h4>
-                  <p className="text-primary-300 text-sm font-medium mb-2">Cryptographic Proof</p>
-                  <p className="text-gray-400 text-sm">Mathematical certainty</p>
+                  <h4 className="font-semibold text-white text-lg mb-2">Stablecoin Compliance Layer</h4>
+                  <p className="text-primary-300 text-sm font-medium mb-2">Regulated Asset Framework</p>
+                  <p className="text-gray-400 text-sm">Supports QUSD operations with Move-based access control and pause functions.</p>
                 </div>
               </div>
             </div>
