@@ -31,8 +31,8 @@ const Architecture: React.FC = () => {
                   </div>
                   <p className="text-gray-600 text-lg font-light">Payment processing layer</p>
                 </div>
-                <div className="hidden lg:block bg-primary-100 text-primary-700 px-4 py-2 rounded-full text-sm font-semibold">
-                  1000x FASTER
+                <div className="hidden lg:block bg-primary-100 text-primary-600 px-4 py-2 rounded-full text-sm font-semibold animate-pulse">
+                  Initiated
                 </div>
               </div>
               
@@ -88,8 +88,8 @@ const Architecture: React.FC = () => {
                   </div>
                   <p className="text-gray-300 text-lg font-light">Settlement layer</p>
                 </div>
-                <div className="hidden lg:block bg-primary-900 text-primary-300 px-4 py-2 rounded-full text-sm font-semibold">
-                  100% IMMUTABLE
+                <div className="hidden lg:block bg-primary-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+                  Finalized
                 </div>
               </div>
               
