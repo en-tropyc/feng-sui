@@ -66,9 +66,7 @@ const Hero: React.FC = () => {
           </h1>
           
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light text-gray-200 mb-8 tracking-wide max-w-5xl mx-auto">
-            Quantum-resistant stablecoin infrastructure 
-            <br className="hidden sm:block" />
-            built for enterprise scale
+            Cryptographic equilibrium for enterprise-scale quantum agility.
           </h2>
           
           <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
