@@ -374,7 +374,7 @@ console.log('Transaction ID:', result.id);`}</pre>
   };
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section id="technical-specs" className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 tracking-tight">

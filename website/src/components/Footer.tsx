@@ -4,28 +4,25 @@ import { Shield, Github, Twitter, MessageCircle, Mail, ExternalLink } from 'luci
 const Footer: React.FC = () => {
   const links = {
     product: [
-      { name: "Interactive demo", href: "#demo" },
-      { name: "Technical specs", href: "#specs" },
-      { name: "API documentation", href: "#api" },
-      { name: "Security audit", href: "#security" },
+      { name: "Interactive demo", href: "#live-demo" },
+      { name: "Technical specs", href: "#technical-specs" },
+      { name: "API documentation", href: "/docs/api" },
     ],
     developers: [
-      { name: "Getting started", href: "#start" },
-      { name: "SDK downloads", href: "#sdk" },
-      { name: "Code examples", href: "#examples" },
-      { name: "Developer forum", href: "#forum" },
+      { name: "Getting started", href: "/docs/quickstart" },
+      { name: "SDK downloads", href: "/downloads" },
+      { name: "Developer forum", href: "https://forum.feng-sui.network" },
     ],
     enterprise: [
-      { name: "Enterprise demo", href: "#enterprise" },
-      { name: "Contact sales", href: "#sales" },
-      { name: "Integration support", href: "#support" },
-      { name: "Compliance", href: "#compliance" },
+      { name: "Enterprise demo", href: "/enterprise/demo" },
+      { name: "Contact sales", href: "mailto:sales@feng-sui.network" },
+      { name: "Integration support", href: "/support" },
     ],
     resources: [
-      { name: "Whitepaper", href: "#whitepaper" },
-      { name: "Research papers", href: "#research" },
-      { name: "Blog", href: "#blog" },
-      { name: "Media kit", href: "#media" },
+      { name: "Whitepaper", href: "/whitepaper.pdf" },
+      { name: "Research papers", href: "/research" },
+      { name: "Blog", href: "https://blog.feng-sui.network" },
+      { name: "Media kit", href: "/media" },
     ]
   };
 
@@ -53,7 +50,7 @@ const Footer: React.FC = () => {
             
             <div className="flex items-center gap-4">
               <a 
-                href="https://github.com/feng-sui" 
+                href="https://github.com/en-tropyc/feng-sui" 
                 className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition-colors duration-200"
               >
                 <Github className="w-5 h-5 text-gray-700" />
