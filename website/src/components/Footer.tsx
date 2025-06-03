@@ -44,8 +44,7 @@ const Footer: React.FC = () => {
             </div>
             
             <p className="text-gray-600 mb-6 leading-relaxed">
-              The world's first quantum-resistant payment network. Built on Sui blockchain 
-              with Falcon-512 signatures for enterprise-grade security and performance.
+              The first quantum-secure payment network on Sui. Powered by Falcon-512 signatures for scalable, enterprise-grade security and performance.
             </p>
             
             <div className="flex items-center gap-4">
