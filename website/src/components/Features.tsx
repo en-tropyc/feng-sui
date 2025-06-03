@@ -37,14 +37,14 @@ const Features: React.FC = () => {
       title: "Global Infrastructure",
       description: "Built on Sui's global network with instant cross-border payment capabilities",
       color: "purple",
-      stats: "180+ Countries"
+      stats: "Coming Soon"
     },
     {
       icon: <Lock className="w-8 h-8" />,
       title: "Enterprise Compliance",
       description: "Built-in KYC/AML hooks and regulatory compliance features for institutional use",
       color: "orange",
-      stats: "SOC 2 Compliant"
+      stats: "Coming Soon"
     }
   ];
 
