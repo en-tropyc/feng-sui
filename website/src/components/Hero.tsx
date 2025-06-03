@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
         {/* Main Content */}
         <div className="animate-fade-in">
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold text-white mb-8 tracking-tight">
+          <h1 className="text-[6rem] sm:text-[7rem] lg:text-[9rem] xl:text-[12rem] font-bold text-white mb-8 tracking-tight leading-none">
             Feng-Sui
           </h1>
           
