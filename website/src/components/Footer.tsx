@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Feng-Sui Network</h3>
+                <h3 className="text-xl font-bold text-gray-900">Feng-Sui</h3>
                 <p className="text-gray-600 text-sm">Quantum-resistant payments</p>
               </div>
             </div>
@@ -131,43 +131,11 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Quantum Threat Awareness */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-red-600 text-2xl font-bold mb-2">2030</div>
-              <div className="text-gray-600 text-sm">Quantum computers expected to break current cryptography</div>
-            </div>
-            <div>
-              <div className="text-orange-600 text-2xl font-bold mb-2">$2.1T</div>
-              <div className="text-gray-600 text-sm">Financial systems at risk from quantum attacks</div>
-            </div>
-            <div>
-              <div className="text-green-600 text-2xl font-bold mb-2">100%</div>
-              <div className="text-gray-600 text-sm">Quantum-resistant with Feng-Sui Network</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Built on Sui */}
-        <div className="text-center mb-12">
-          <div className="bg-white border border-gray-200 rounded-xl p-6 inline-block">
-            <div className="flex items-center gap-3">
-              <span className="text-gray-600">Powered by</span>
-              <div className="text-2xl font-bold text-primary-600">Sui Network</div>
-              <ExternalLink className="w-4 h-4 text-gray-400" />
-            </div>
-            <p className="text-gray-600 text-sm mt-2">
-              Building the future of quantum-resistant finance on the fastest blockchain
-            </p>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-gray-600 text-sm">
-              © 2024 Feng-Sui Network. All rights reserved.
+              © 2024 Feng-Sui. All rights reserved.
             </div>
             
             <div className="flex items-center gap-6 text-sm">
