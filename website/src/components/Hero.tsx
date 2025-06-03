@@ -79,13 +79,13 @@ const Hero: React.FC = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
             <button 
-              onClick={() => scrollToSection('network-infrastructure')}
+              onClick={() => scrollToSection('live-demo')}
               className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all duration-200 hover:shadow-xl hover:shadow-primary-500/25 min-w-[180px]"
             >
-              Get started
+              Live Demo
             </button>
             <button 
-              onClick={() => scrollToSection('live-demo')}
+              onClick={() => scrollToSection('network-infrastructure')}
               className="border border-gray-600 hover:border-gray-500 hover:bg-gray-800/50 text-gray-300 hover:text-white px-8 py-4 rounded-lg text-lg font-medium transition-all duration-200 min-w-[180px]"
             >
               Learn about Feng-Sui

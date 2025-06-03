@@ -87,8 +87,8 @@ const Features: React.FC = () => {
             
             <div className="space-y-6">
               <div className="p-6 bg-red-50 rounded-xl border border-red-200">
-                <div className="text-red-700 font-semibold mb-2">2030: Quantum breakthrough expected</div>
-                <div className="text-gray-600 leading-relaxed">IBM, Google, and other tech giants predict cryptographically relevant quantum computers within this decade</div>
+                <div className="text-red-700 font-semibold mb-2">2030s: Quantum breakthrough expected</div>
+                <div className="text-gray-600 leading-relaxed">IBM, Google, and other tech giants predict cryptographically relevant quantum computers within the next decade</div>
               </div>
               
               <div className="p-6 bg-orange-50 rounded-xl border border-orange-200">
@@ -150,18 +150,17 @@ const Features: React.FC = () => {
         <div className="text-center">
           <div className="bg-gray-900 rounded-2xl p-12">
             <h3 className="text-3xl font-bold text-white mb-4">
-              Ready to secure your financial future?
+              Secure your stablecoin network today
             </h3>
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Join forward-thinking enterprises already building on quantum-resistant infrastructure. 
-              The future of finance starts with Feng-Sui.
+              Adopt post-quantum protection that's already compliant with NIST standards and built for enterprise-scale systems.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg font-medium transition-colors duration-200">
-                Schedule enterprise demo
+                Request PQC Readiness Assessment
               </button>
               <button className="border border-gray-600 hover:border-gray-500 hover:bg-gray-800/50 text-gray-300 hover:text-white px-8 py-4 rounded-lg font-medium transition-all duration-200">
-                Download whitepaper
+                Whitepaper (Coming Soon)
               </button>
             </div>
           </div>
