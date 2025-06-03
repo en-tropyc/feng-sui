@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800,900&display=swap');
+
+@layer base {
+  body {
+    font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0c1532 0%, #0f0f23 50%, #1a1a2e 100%);
+    min-height: 100vh;
+    color: white;
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #38bdf8, #e879f9, #0ea5e9);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  .animate-float-up {
+    animation: float-up linear infinite;
+  }
+  
+  @keyframes float-up {
+    0% {
+      transform: translateY(120vh) scale(0.8);
+      opacity: 0;
+      filter: blur(1px);
+    }
+    5% {
+      opacity: 0.8;
+      transform: translateY(100vh) scale(1);
+      filter: blur(0px);
+    }
+    95% {
+      opacity: 0.8;
+      transform: translateY(-20vh) scale(1);
+      filter: blur(0px);
+    }
+    100% {
+      transform: translateY(-40vh) scale(0.8);
+      opacity: 0;
+      filter: blur(1px);
+    }
+  }
+}
