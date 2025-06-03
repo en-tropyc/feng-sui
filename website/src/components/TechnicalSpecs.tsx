@@ -217,8 +217,8 @@ const TechnicalSpecs: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary-600 mb-2">&lt; 100ms</div>
-                <div className="text-gray-600 font-medium mb-2">Network Latency</div>
-                <div className="text-gray-500 text-sm">Off-chain signature aggregation</div>
+                <div className="text-gray-600 font-medium mb-2">Confirmation Latency</div>
+                <div className="text-gray-500 text-sm">Off-chain signature verification</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-2">&lt; 500ms</div>
@@ -226,7 +226,7 @@ const TechnicalSpecs: React.FC = () => {
                 <div className="text-gray-500 text-sm">Signature verification & batching</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">&lt; 1s</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">~2-5s</div>
                 <div className="text-gray-600 font-medium mb-2">Final Settlement</div>
                 <div className="text-gray-500 text-sm">On-chain Sui blockchain finality</div>
               </div>

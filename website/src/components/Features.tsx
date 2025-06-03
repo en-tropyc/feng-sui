@@ -11,14 +11,14 @@ const Features: React.FC = () => {
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: "Lightning fast settlement",
-      description: "Sub-second finality with batch processing optimized for high-frequency trading",
-      stats: "< 1s settlement"
+      title: "Lightning fast confirmation",
+      description: "Sub-100ms confirmation with batched on-chain settlement for optimal security and performance",
+      stats: "< 100ms confirmation"
     },
     {
       icon: <DollarSign className="w-8 h-8" />,
       title: "Enterprise cost efficiency",
-      description: "Dramatically reduce payment processing costs with batch settlements and gas optimization",
+      description: "Dramatically reduce payment processing costs with batch settlement and gas optimization",
       stats: "90% cost reduction"
     },
     {

@@ -72,7 +72,7 @@ const Hero: React.FC = () => {
           </h2>
           
           <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
-            Unrivaled security coupled with instant settlement means your payments 
+            Unrivaled security coupled with instant confirmation means your payments 
             stay protected when quantum computing arrives
           </p>
           
@@ -98,13 +98,13 @@ const Hero: React.FC = () => {
          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
             <div className="text-center group">
               <div className="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">
-                Settlement time
+                Confirmation time
               </div>
               <div className="text-4xl lg:text-5xl font-bold text-primary-400 group-hover:text-primary-300 transition-colors duration-200">
                 &lt;100ms
               </div>
               <div className="text-gray-600 text-sm mt-1">
-                Average finality
+                Off-chain processing
               </div>
             </div>
             

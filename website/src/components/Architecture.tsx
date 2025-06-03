@@ -50,8 +50,8 @@ const Architecture: React.FC = () => {
                     <Zap size={32} className="text-primary-500" />
                   </div>
                   <h4 className="font-semibold text-gray-900 text-lg mb-2">Lightning-Fast</h4>
-                  <p className="text-primary-600 text-sm font-medium mb-2">&lt;100ms Processing</p>
-                  <p className="text-gray-500 text-sm">Instant confirmation</p>
+                  <p className="text-primary-600 text-sm font-medium mb-2">&lt;100ms Confirmation</p>
+                  <p className="text-gray-500 text-sm">Instant off-chain processing</p>
                 </div>
                 <div className="text-center p-6 bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition-colors duration-200">
                   <div className="flex justify-center mb-4">
@@ -158,8 +158,8 @@ const Architecture: React.FC = () => {
               <div className="flex items-start gap-4">
                 <div className="w-2 h-2 bg-primary-500 rounded-full mt-3 flex-shrink-0"></div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Instant payments</h4>
-                  <p className="text-gray-600 leading-relaxed">Sub-100ms off-chain processing</p>
+                  <h4 className="font-semibold text-gray-900 mb-1">Instant confirmations</h4>
+                  <p className="text-gray-600 leading-relaxed">Sub-100ms off-chain transaction confirmation</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
