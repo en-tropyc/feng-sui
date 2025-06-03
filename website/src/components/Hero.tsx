@@ -12,53 +12,82 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-6xl mx-auto text-center">
-        {/* Main Heading */}
-        <h1 className="text-6xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-quantum-400 via-crypto-400 to-quantum-500 bg-clip-text text-transparent animate-pulse-slow leading-tight py-2">
-          Feng-Sui
-        </h1>
-        <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
-          Quantum-Safe Stablecoins
-        </h2>
-        
-        {/* Subtitle */}
-        {/* <p className="text-xl md:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto leading-relaxed font-semibold">
-          Powered by Falcon-512 Signatures on Sui
-        </p> */}
-        <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-4xl mx-auto leading-relaxed">
-          Built with post-quantum cryptography to protect digital assets in the quantum computing era.
-        </p>
-        
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-          <button 
-            onClick={() => scrollToSection('network-infrastructure')}
-            className="bg-quantum-500 hover:bg-quantum-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-quantum-500/25"
-          >
-            Explore Infrastructure
-          </button>
-          <button 
-            onClick={() => scrollToSection('live-demo')}
-            className="glass border-2 border-crypto-400 hover:bg-crypto-400/10 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105"
-          >
-            Live Demo
-          </button>
+    <section className="relative min-h-screen flex items-center justify-center bg-gray-900">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
+        {/* Main Content */}
+        <div className="animate-fade-in">
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold text-white mb-8 tracking-tight">
+            Feng-Sui
+          </h1>
+          
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-light text-gray-200 mb-8 tracking-wide max-w-5xl mx-auto">
+            Quantum-resistant stablecoin infrastructure 
+            <br className="hidden sm:block" />
+            built for enterprise scale
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+            Unrivaled security coupled with instant settlement means your payments 
+            stay protected when quantum computing arrives
+          </p>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
+            <button 
+              onClick={() => scrollToSection('network-infrastructure')}
+              className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all duration-200 hover:shadow-xl hover:shadow-primary-500/25 min-w-[180px]"
+            >
+              Get started
+            </button>
+            <button 
+              onClick={() => scrollToSection('live-demo')}
+              className="border border-gray-600 hover:border-gray-500 hover:bg-gray-800/50 text-gray-300 hover:text-white px-8 py-4 rounded-lg text-lg font-medium transition-all duration-200 min-w-[180px]"
+            >
+              Learn about Feng-Sui
+            </button>
+          </div>
         </div>
         
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-crypto-400 mb-2">&lt;100ms</div>
-            <div className="text-gray-400 text-sm uppercase tracking-wider">Network Latency</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-quantum-400 mb-2">Falcon-512</div>
-            <div className="text-gray-400 text-sm uppercase tracking-wider">Post-Quantum Signatures</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-crypto-400 mb-2">∞</div>
-            <div className="text-gray-400 text-sm uppercase tracking-wider">Quantum-Resistant</div>
+        {/* Metrics Section - Sui style */}
+        <div className="animate-slide-up">
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
+            <div className="text-center group">
+              <div className="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">
+                Settlement time
+              </div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary-400 group-hover:text-primary-300 transition-colors duration-200">
+                &lt;100ms
+              </div>
+              <div className="text-gray-600 text-sm mt-1">
+                Average finality
+              </div>
+            </div>
+            
+            <div className="text-center group">
+              <div className="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">
+                Quantum protection
+              </div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary-400 group-hover:text-primary-300 transition-colors duration-200">
+                Falcon-512
+              </div>
+              <div className="text-gray-600 text-sm mt-1">
+                Post-quantum signatures
+              </div>
+            </div>
+            <div className="text-center group">
+              <div className="text-gray-500 text-xs uppercase tracking-wider font-medium mb-2">
+                Future-proof
+              </div>
+              <div className="text-4xl lg:text-5xl font-bold text-primary-400 group-hover:text-primary-300 transition-colors duration-200">
+                ∞
+              </div>
+              <div className="text-gray-600 text-sm mt-1">
+                Quantum resistance
+              </div>
+            </div>
           </div>
         </div>
       </div>
