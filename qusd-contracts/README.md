@@ -67,7 +67,7 @@ Users maintain autonomy while enjoying seamless quantum-resistant transfers.
 - **Escrow-Based Transfers**: No coin splitting, precise amounts, batch efficiency  
 - **Hybrid Model**: Quantum transfers via Feng-Sui, DeFi via standard Sui
 - **Progressive UX**: Auto-deposit eliminates manual escrow management
-- **Battle-Tested**: Comprehensive test suite with 9 passing tests
+- **Battle-Tested**: 16 Move tests verify the contracts (run with `sui move test`)
 
 ## Usage
 
